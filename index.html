@@ -27,10 +27,9 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .typing-indicator { animation: pulse 1.5s infinite; }
         .image-hover { transition: all 0.3s ease; }
         .image-hover:hover { transform: scale(1.05); }
-        input[type="password"], input[type="text"] { font-size: 16px; }
+        input[type="password"], input[type="text"], input[type="number"] { font-size: 16px; }
     </style>
 </head>
 <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
@@ -46,7 +45,7 @@
             <!-- معرض الصور -->
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">اختر صورة:</h2>
-                <div id="imageGallery" class="grid grid-cols-4 md:grid-cols-8 gap-3">
+                <div id="imageGallery" class="grid grid-cols-4 md:grid-cols-8 gap-3 min-h-[200px]">
                     <!-- سيتم ملء الصور هنا بواسطة JavaScript -->
                 </div>
             </div>
@@ -57,8 +56,7 @@
                     مدة الغرفة:
                 </label>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                    <button type="button" class="duration-btn bg-gray-200 dark:bg-gray-700 hover:bg-primary hover:text-white 
-                                                 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg transition-all text-sm font-medium"
+                    <button type="button" class="duration-btn bg-primary text-white py-2 px-4 rounded-lg transition-all text-sm font-medium"
                             data-duration="5">5 دقائق</button>
                     <button type="button" class="duration-btn bg-gray-200 dark:bg-gray-700 hover:bg-primary hover:text-white 
                                                  text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg transition-all text-sm font-medium"
@@ -137,19 +135,17 @@
                 
                 <div class="flex items-center space-x-4 space-x-reverse">
                     <!-- أزرار التحكم في الوقت -->
-                    <div class="flex flex-col space-y-2">
-                        <div class="flex space-x-2 space-x-reverse">
-                            <button id="addTimeBtn" 
-                                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-colors"
-                                    title="إضافة 5 دقائق">
-                                +5 د
-                            </button>
-                            <button id="doubleTimeBtn" 
-                                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors"
-                                    title="مضاعفة الوقت">
-                                ×2
-                            </button>
-                        </div>
+                    <div class="flex space-x-2 space-x-reverse">
+                        <button id="addTimeBtn" 
+                                class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                                title="إضافة 5 دقائق">
+                            +5 د
+                        </button>
+                        <button id="doubleTimeBtn" 
+                                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                                title="مضاعفة الوقت">
+                            ×2
+                        </button>
                     </div>
                     
                     <!-- مؤقت العد التنازلي -->
@@ -218,7 +214,6 @@
         </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
     <script>
         // إعداد الوضع المظلم
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -232,56 +227,45 @@
             }
         });
 
-        // إعداد Socket.IO
-        const socket = io();
-
-        // الصور المتاحة مع صور احتياطية
+        // الصور المتاحة - بدائل بسيطة تعمل دائماً
         const availableImages = [
-            { 
-                url: 'https://pfst.cf2.poecdn.net/base/image/abeb3ce2ed0abacc1a1ad9263ed44c8c5bee481149ecd7e710312b4761c2a546?w=300&h=300', 
-                fallback: 'https://picsum.photos/300/300?random=1',
+            {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjM0I4MkY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2KzYqNin2YQg2KfZhNir2YTYrDwvdGV4dD48L3N2Zz4=',
                 name: 'جبال الثلج',
                 id: 'mountain_snow'
             },
-            { 
-                url: 'https://pfst.cf2.poecdn.net/base/image/65fb41e615a8e502c74f72b754cc9ba8cb5f527ef035fa295b98436ba0acc730?w=300&h=300', 
-                fallback: 'https://picsum.photos/300/300?random=2',
+            {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTBCOTgxIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2KfZhNi62KfYqNipINin2YTYrtiu2LHYpzwvdGV4dD48L3N2Zz4=',
                 name: 'الغابة الخضراء',
                 id: 'green_forest'
             },
-            { 
-                url: 'https://pfst.cf2.poecdn.net/base/image/493eb6110dc2ead37400c9d80f39ae00e3b9fad3a56be89afb3ba4f83b500a86?w=300&h=300', 
-                fallback: 'https://picsum.photos/300/300?random=3',
+            {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRjU5RTBCIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2KPYtNis2KfYsSDYp9mE2YbYrtmK2YQ8L3RleHQ+PC9zdmc+',
                 name: 'أشجار النخيل',
                 id: 'palm_trees'
             },
-            { 
-                url: 'https://pfst.cf2.poecdn.net/base/image/515cff767426cf20c06b4a22d2ce7b7a36751dbdd1db9547c46724f4da77ea41?w=300&h=300', 
-                fallback: 'https://picsum.photos/300/300?random=4',
+            {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOEI1Q0Y2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2KfZhNiq2YLZhtmK2Kkg2KfZhNit2K/Zitir2Kk8L3RleHQ+PC9zdmc+',
                 name: 'التقنية الحديثة',
                 id: 'modern_tech'
             },
-            { 
-                url: 'https://pfst.cf2.poecdn.net/base/image/0442dd47b2e11bc67c4a2482f1c5ccdccb5f0e89baeae71502fc002b67fb3852?w=300&h=300', 
-                fallback: 'https://picsum.photos/300/300?random=5',
+            {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjODRDQzE2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2LrYp9io2Kkg2KfZhNiu2YrYstix2KfZhDwvdGV4dD48L3N2Zz4=',
                 name: 'غابة الخيزران',
                 id: 'bamboo_forest'
             },
-            { 
-                url: 'https://pfst.cf2.poecdn.net/base/image/e3d67c690e74d0995d7773f79f79bc9b5176f61548a0883787aad2633bcb273a?w=300&h=300', 
-                fallback: 'https://picsum.photos/300/300?random=6',
+            {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRUM0ODk5Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2YLZhdipINin2YTYrNio2YQ8L3RleHQ+PC9zdmc+',
                 name: 'قمة الجبل',
                 id: 'mountain_peak'
             },
-            { 
-                url: 'https://pfst.cf2.poecdn.net/base/image/fd3935a033a6d59d00f74288f71c873b48445096a085fa2b1b4b78503c483f4c?w=300&h=300', 
-                fallback: 'https://picsum.photos/300/300?random=7',
+            {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMDZCNkQ0Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2KrYrdiqINin2YTZhdin2KE8L3RleHQ+PC9zdmc+',
                 name: 'تحت الماء',
                 id: 'underwater'
             },
-            { 
-                url: 'https://pfst.cf2.poecdn.net/base/image/d3cd7a40b6b07c63cb1f984d2ccb417016db003fd9cc0ecbd7eac1b6a007ca30?w=300&h=300', 
-                fallback: 'https://picsum.photos/300/300?random=8',
+            {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRUY0NDQ0Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2YXYutin2YXYsSDYp9mE2KzYqNin2YQ8L3RleHQ+PC9zdmc+',
                 name: 'مغامر الجبال',
                 id: 'mountain_hiker'
             }
@@ -296,6 +280,7 @@
         let countdownInterval = null;
         let messages = [];
         let timeExtensions = 0; // عدد التمديدات
+        let currentUser = null;
 
         // عناصر DOM
         const loginScreen = document.getElementById('loginScreen');
@@ -321,52 +306,16 @@
         // تحميل الصور في المعرض
         function loadImageGallery() {
             console.log('بدء تحميل معرض الصور...');
-            
-            if (!imageGallery) {
-                console.error('عنصر معرض الصور غير موجود!');
-                return;
-            }
-            
             imageGallery.innerHTML = '';
-            
-            if (!availableImages || availableImages.length === 0) {
-                console.error('لا توجد صور متاحة!');
-                imageGallery.innerHTML = '<p class="text-center text-gray-500 col-span-full">لا توجد صور متاحة</p>';
-                return;
-            }
 
             availableImages.forEach((image, index) => {
                 const imageDiv = document.createElement('div');
                 imageDiv.className = `image-hover cursor-pointer rounded-lg overflow-hidden border-2 border-transparent 
-                                     hover:border-primary transition-all aspect-square relative`;
-                
-                // إنشاء عدة خيارات احتياطية للصور
-                const createFallbackImage = (name, colorScheme) => {
-                    const colors = [
-                        '#3B82F6', '#EF4444', '#10B981', '#F59E0B', 
-                        '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16'
-                    ];
-                    const bgColor = colors[colorScheme % colors.length];
-                    return `data:image/svg+xml;charset=UTF-8,%3Csvg width='300' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='100%25' height='100%25' fill='${bgColor}'/%3E%3Ctext x='50%25' y='50%25' font-size='14' text-anchor='middle' dy='.3em' fill='white'%3E${encodeURIComponent(name)}%3C/text%3E%3C/svg%3E`;
-                };
-                
-                const fallbackSVG = createFallbackImage(image.name, index);
+                                     hover:border-primary transition-all aspect-square relative bg-gray-100`;
                 
                 imageDiv.innerHTML = `
                     <img src="${image.url}" alt="${image.name}" 
-                         class="w-full h-full object-cover transition-all duration-300" 
-                         onerror="
-                            this.onerror=null; 
-                            if(this.dataset.attempt === 'first') {
-                                this.dataset.attempt = 'second';
-                                this.src = '${image.fallback || 'https://picsum.photos/300/300?random=' + (index + 1)}';
-                            } else {
-                                this.src = '${fallbackSVG}';
-                            }
-                            console.log('فشل تحميل الصورة: ${image.name}');
-                         "
-                         onload="console.log('تم تحميل الصورة بنجاح: ${image.name}');"
-                         data-attempt="first">
+                         class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all 
                                 flex items-center justify-center">
                         <span class="text-white text-xs font-bold opacity-0 hover:opacity-100 transition-opacity
@@ -381,7 +330,6 @@
                 
                 imageDiv.addEventListener('click', () => selectImage(image, imageDiv));
                 imageGallery.appendChild(imageDiv);
-                console.log(`تم إضافة الصورة ${index + 1}: ${image.name}`);
             });
             
             console.log('تم تحميل', availableImages.length, 'صورة في المعرض');
@@ -413,26 +361,21 @@
             // تحديث نص الزر والمظهر
             if (hasImage && hasPassword) {
                 enterRoomBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                enterRoomBtn.classList.add('hover:bg-primary/90');
                 enterRoomBtn.textContent = 'دخول الغرفة ✓';
             } else {
                 enterRoomBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                enterRoomBtn.classList.remove('hover:bg-primary/90');
                 enterRoomBtn.textContent = 'دخول الغرفة';
             }
-            
-            console.log('تحديث زر الدخول - صورة:', hasImage, 'كلمة مرور:', hasPassword);
         }
 
         // إنشاء مفتاح الغرفة
         function generateRoomKey(image, password) {
             const combined = `${image.id}_${password}`;
-            // محاكاة hash بسيط - في التطبيق الحقيقي استخدم crypto
             let hash = 0;
             for (let i = 0; i < combined.length; i++) {
                 const char = combined.charCodeAt(i);
                 hash = ((hash << 5) - hash) + char;
-                hash = hash & hash; // تحويل إلى 32 بت
+                hash = hash & hash;
             }
             return Math.abs(hash).toString(36);
         }
@@ -440,12 +383,6 @@
         // إدارة اختيار المدة
         function setupDurationSelection() {
             const durationButtons = document.querySelectorAll('.duration-btn');
-            
-            // تحديد الافتراضي (5 دقائق)
-            if (durationButtons[0]) {
-                durationButtons[0].classList.add('bg-primary', 'text-white');
-                durationButtons[0].classList.remove('bg-gray-200', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
-            }
             
             durationButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -483,6 +420,26 @@
             }
         }
 
+        // محاكاة نظام المحادثة الجماعية (بدون خادم)
+        function simulateMultiUser() {
+            // إنشاء اسم مستخدم
+            const userNames = ['المستخدم الأول', 'المستخدم الثاني', 'المستخدم الثالث', 'المستخدم الرابع'];
+            const existingUsers = JSON.parse(localStorage.getItem(`room_${currentRoomKey}_users`) || '[]');
+            currentUser = userNames[existingUsers.length] || `المستخدم رقم ${existingUsers.length + 1}`;
+            
+            // إضافة المستخدم الجديد
+            existingUsers.push({
+                name: currentUser,
+                joinTime: Date.now()
+            });
+            localStorage.setItem(`room_${currentRoomKey}_users`, JSON.stringify(existingUsers));
+            
+            // تحديث حالة الغرفة
+            document.getElementById('roomStatus').textContent = `${currentUser} - ${existingUsers.length} مستخدم`;
+            
+            return currentUser;
+        }
+
         // دخول الغرفة
         function enterRoom() {
             if (!selectedImage || !passwordInput.value.trim()) {
@@ -492,13 +449,69 @@
 
             const roomKey = generateRoomKey(selectedImage, passwordInput.value.trim());
             currentRoomKey = roomKey;
+            roomDuration = selectedDuration * 60 * 1000;
             
-            // إرسال طلب انضمام للخادم
-            socket.emit('join-room', {
-                roomKey: roomKey,
-                image: selectedImage,
-                selectedDuration: selectedDuration
-            });
+            // التحقق من وجود الغرفة
+            const existingRoom = JSON.parse(localStorage.getItem(`room_${roomKey}`) || 'null');
+            if (existingRoom) {
+                const elapsed = Date.now() - existingRoom.startTime;
+                if (elapsed >= existingRoom.duration) {
+                    showCustomAlert('انتهت صلاحية هذه الغرفة');
+                    return;
+                }
+                roomStartTime = existingRoom.startTime;
+                roomDuration = existingRoom.duration;
+                timeExtensions = existingRoom.extensions || 0;
+                messages = existingRoom.messages || [];
+            } else {
+                roomStartTime = Date.now();
+                timeExtensions = 0;
+                messages = [];
+                
+                // حفظ الغرفة الجديدة
+                const roomData = {
+                    startTime: roomStartTime,
+                    duration: roomDuration,
+                    extensions: timeExtensions,
+                    messages: messages,
+                    image: selectedImage
+                };
+                localStorage.setItem(`room_${roomKey}`, JSON.stringify(roomData));
+            }
+            
+            // محاكاة المستخدم
+            simulateMultiUser();
+            
+            // تحديث واجهة الغرفة
+            selectedImagePreview.innerHTML = `<img src="${selectedImage.url}" alt="${selectedImage.name}" class="w-full h-full object-cover">`;
+            
+            // إضافة رسالة انضمام
+            const joinMessage = {
+                id: Date.now(),
+                text: `${currentUser} انضم للمحادثة`,
+                timestamp: new Date(),
+                type: 'text',
+                sender: 'system'
+            };
+            messages.push(joinMessage);
+            
+            // تحديث عرض الوقت الكامل
+            updateTotalTimeDisplay();
+            
+            // الانتقال لشاشة المحادثة
+            loginScreen.classList.add('hidden');
+            chatScreen.classList.remove('hidden');
+            
+            // بدء المؤقت
+            startCountdown();
+            
+            // تحديث الرسائل
+            updateMessagesDisplay();
+            
+            // تركيز على حقل الرسالة
+            messageInput.focus();
+            
+            console.log('دخول الغرفة بمدة:', selectedDuration, 'دقيقة');
         }
 
         // بدء العد التنازلي
@@ -509,13 +522,11 @@
                 const remaining = roomDuration - elapsed;
                 
                 if (remaining <= 0) {
-                    // انتهاء الوقت
                     clearInterval(countdownInterval);
                     showExpiredScreen();
                     return;
                 }
                 
-                // تحديث عرض الوقت
                 const minutes = Math.floor(remaining / 60000);
                 const seconds = Math.floor((remaining % 60000) / 1000);
                 timeRemaining.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -539,192 +550,38 @@
             }
         }
 
-        // رفع صورة مخصصة
-        function handleCustomImage(file) {
-            if (!file || !file.type.startsWith('image/')) {
-                showCustomAlert('يرجى اختيار ملف صورة صحيح');
-                return;
-            }
+        // إرسال رسالة
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text) return;
             
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const customImage = {
-                    url: e.target.result,
-                    name: 'صورة مخصصة',
-                    id: 'custom_' + Date.now()
-                };
-                
-                // إضافة الصورة المخصصة للمعرض
-                const imageDiv = document.createElement('div');
-                imageDiv.className = `image-hover cursor-pointer rounded-lg overflow-hidden border-2 border-transparent 
-                                     hover:border-primary transition-all aspect-square relative`;
-                imageDiv.innerHTML = `
-                    <img src="${customImage.url}" alt="${customImage.name}" 
-                         class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all 
-                                flex items-center justify-center">
-                        <span class="text-white text-xs font-bold opacity-0 hover:opacity-100 transition-opacity">
-                            ${customImage.name}
-                        </span>
-                    </div>
-                    <div class="absolute top-1 right-1 bg-primary text-white text-xs px-2 py-1 rounded">
-                        مخصصة
-                    </div>
-                `;
-                
-                imageDiv.addEventListener('click', () => selectImage(customImage, imageDiv));
-                imageGallery.insertBefore(imageDiv, imageGallery.firstChild);
-                
-                // تحديد الصورة المرفوعة تلقائياً
-                selectImage(customImage, imageDiv);
+            const message = {
+                id: Date.now(),
+                text: text,
+                timestamp: new Date(),
+                type: 'text',
+                sender: 'user',
+                username: currentUser
             };
-            reader.readAsDataURL(file);
-        }
-
-        // دالة مساعدة لتجنب XSS
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // عرض تنبيه مخصص
-        function showCustomAlert(message) {
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
-            modal.innerHTML = `
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full p-6">
-                    <div class="text-center">
-                        <div class="text-4xl mb-4">⚠️</div>
-                        <p class="text-gray-700 dark:text-gray-300 mb-4">${message}</p>
-                        <button onclick="this.closest('.fixed').remove()" 
-                                class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg transition-colors">
-                            حسناً
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
-
-        // عرض الصورة في نافذة منبثقة
-        function showImageModal(imageUrl) {
-            const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
-            modal.innerHTML = `
-                <div class="relative max-w-4xl max-h-full">
-                    <img src="${imageUrl}" alt="صورة مكبرة" class="max-w-full max-h-full object-contain rounded-lg">
-                    <button onclick="this.closest('.fixed').remove()" 
-                            class="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 
-                                   flex items-center justify-center hover:bg-opacity-75 transition-colors">
-                        ✕
-                    </button>
-                </div>
-            `;
-            document.body.appendChild(modal);
             
-            // إغلاق بالنقر خارج الصورة
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.remove();
-                }
-            });
-        }
-
-        // إعادة تعيين النموذج
-        function resetForm() {
-            selectedImage = null;
-            passwordInput.value = '';
+            addMessage(message);
             messageInput.value = '';
-            messages = [];
-            currentRoomKey = null;
-            
-            // إزالة التحديدات
-            document.querySelectorAll('.border-primary').forEach(el => {
-                el.classList.remove('border-primary');
-                el.classList.add('border-transparent');
-            });
-            
-            updateEnterButton();
+            messageInput.style.height = 'auto';
         }
 
-        // Socket.IO أحداث
-        socket.on('room-joined', (data) => {
-            if (data.success) {
-                const room = data.room;
-                const user = data.user;
-                
-                // تحديث بيانات الغرفة
-                roomStartTime = room.startTime;
-                roomDuration = room.duration;
-                timeExtensions = room.extensions;
-                messages = room.messages;
-                
-                // تحديث واجهة الغرفة
-                selectedImagePreview.innerHTML = `<img src="${room.image.url}" alt="${room.image.name}" class="w-full h-full object-cover">`;
-                
-                // تحديث حالة الغرفة
-                document.getElementById('roomStatus').textContent = `${user.username} - ${room.users.length} مستخدم`;
-                
-                // تحديث عرض الوقت الكامل
-                updateTotalTimeDisplay();
-                
-                // الانتقال لشاشة المحادثة
-                loginScreen.classList.add('hidden');
-                chatScreen.classList.remove('hidden');
-                
-                // بدء المؤقت
-                startCountdown();
-                
-                // تحديث الرسائل
-                updateMessagesDisplay();
-                
-                // تركيز على حقل الرسالة
-                messageInput.focus();
-                
-                console.log('انضممت للغرفة كـ:', user.username);
-            }
-        });
-
-        socket.on('room-expired', () => {
-            showCustomAlert('انتهت صلاحية الغرفة');
-            showExpiredScreen();
-        });
-
-        socket.on('new-message', (message) => {
+        // إضافة رسالة
+        function addMessage(message) {
             messages.push(message);
-            updateMessagesDisplay();
-        });
-
-        socket.on('user-joined', (data) => {
-            const userCount = data.totalUsers;
-            document.getElementById('roomStatus').textContent = `${userCount} مستخدم متصل`;
-            console.log('مستخدم جديد انضم:', data.user.username);
-        });
-
-        socket.on('user-left', (data) => {
-            const userCount = data.totalUsers;
-            document.getElementById('roomStatus').textContent = `${userCount} مستخدم متصل`;
-            console.log('مستخدم غادر:', data.user.username);
-        });
-
-        socket.on('time-extended', (data) => {
-            roomDuration = data.newDuration;
-            timeExtensions = data.extensions;
-            updateTotalTimeDisplay();
             
-            const extendType = data.type === 'add' ? 'إضافة 5 دقائق' : 'مضاعفة الوقت';
-            showCustomAlert(`${data.by} قام بـ ${extendType}!`);
-        });
+            // حفظ في البيانات المحلية
+            const roomData = JSON.parse(localStorage.getItem(`room_${currentRoomKey}`));
+            roomData.messages = messages;
+            localStorage.setItem(`room_${currentRoomKey}`, JSON.stringify(roomData));
+            
+            updateMessagesDisplay();
+        }
 
-        socket.on('left-room', () => {
-            if (countdownInterval) clearInterval(countdownInterval);
-            chatScreen.classList.add('hidden');
-            loginScreen.classList.remove('hidden');
-            resetForm();
-        });
-
-        // تحديث عرض الرسائل لدعم أسماء المستخدمين
+        // تحديث عرض الرسائل
         function updateMessagesDisplay() {
             messagesContainer.innerHTML = '';
             
@@ -732,7 +589,6 @@
                 const messageDiv = document.createElement('div');
                 
                 if (message.sender === 'system') {
-                    // رسائل النظام في المنتصف
                     messageDiv.className = `message-animation flex justify-center mb-4`;
                     messageDiv.innerHTML = `
                         <div class="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 
@@ -741,7 +597,7 @@
                         </div>
                     `;
                 } else {
-                    const isMyMessage = message.userId === socket.id;
+                    const isMyMessage = message.username === currentUser;
                     messageDiv.className = `message-animation flex ${isMyMessage ? 'justify-end' : 'justify-start'}`;
                     
                     const messageContent = document.createElement('div');
@@ -786,20 +642,59 @@
                 messagesContainer.appendChild(messageDiv);
             });
             
-            // التمرير لأسفل
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        // الوظائف المحدثة لاستخدام Socket.IO
-        function sendMessage() {
-            const text = messageInput.value.trim();
-            if (!text) return;
+        // إضافة وقت
+        function addTime() {
+            roomDuration += 5 * 60 * 1000;
+            timeExtensions++;
             
-            socket.emit('send-message', { text: text });
-            messageInput.value = '';
-            messageInput.style.height = 'auto';
+            const roomData = JSON.parse(localStorage.getItem(`room_${currentRoomKey}`));
+            roomData.duration = roomDuration;
+            roomData.extensions = timeExtensions;
+            localStorage.setItem(`room_${currentRoomKey}`, JSON.stringify(roomData));
+            
+            const systemMessage = {
+                id: Date.now(),
+                text: `${currentUser} أضاف 5 دقائق للوقت ⏰`,
+                timestamp: new Date(),
+                type: 'text',
+                sender: 'system'
+            };
+            
+            addMessage(systemMessage);
+            updateTotalTimeDisplay();
+            showCustomAlert('تم إضافة 5 دقائق للغرفة! ⏰');
         }
 
+        // مضاعفة الوقت
+        function doubleTime() {
+            const currentRemaining = roomDuration - (Date.now() - roomStartTime);
+            if (currentRemaining > 0) {
+                roomDuration += currentRemaining;
+                timeExtensions++;
+                
+                const roomData = JSON.parse(localStorage.getItem(`room_${currentRoomKey}`));
+                roomData.duration = roomDuration;
+                roomData.extensions = timeExtensions;
+                localStorage.setItem(`room_${currentRoomKey}`, JSON.stringify(roomData));
+                
+                const systemMessage = {
+                    id: Date.now(),
+                    text: `${currentUser} ضاعف الوقت المتبقي! 🚀`,
+                    timestamp: new Date(),
+                    type: 'text',
+                    sender: 'system'
+                };
+                
+                addMessage(systemMessage);
+                updateTotalTimeDisplay();
+                showCustomAlert('تم مضاعفة الوقت المتبقي! 🚀');
+            }
+        }
+
+        // إرسال صورة
         function handleImageSend(file) {
             if (!file || !file.type.startsWith('image/')) {
                 showCustomAlert('يرجى اختيار ملف صورة صحيح');
@@ -808,17 +703,124 @@
             
             const reader = new FileReader();
             reader.onload = function(e) {
-                socket.emit('send-image', { imageUrl: e.target.result });
+                const message = {
+                    id: Date.now(),
+                    imageUrl: e.target.result,
+                    timestamp: new Date(),
+                    type: 'image',
+                    sender: 'user',
+                    username: currentUser
+                };
+                
+                addMessage(message);
             };
             reader.readAsDataURL(file);
         }
 
-        function addTime() {
-            socket.emit('extend-time', { type: 'add' });
+        // رفع صورة مخصصة
+        function handleCustomImage(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                showCustomAlert('يرجى اختيار ملف صورة صحيح');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const customImage = {
+                    url: e.target.result,
+                    name: 'صورة مخصصة',
+                    id: 'custom_' + Date.now()
+                };
+                
+                const imageDiv = document.createElement('div');
+                imageDiv.className = `image-hover cursor-pointer rounded-lg overflow-hidden border-2 border-transparent 
+                                     hover:border-primary transition-all aspect-square relative bg-gray-100`;
+                imageDiv.innerHTML = `
+                    <img src="${customImage.url}" alt="${customImage.name}" 
+                         class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all 
+                                flex items-center justify-center">
+                        <span class="text-white text-xs font-bold opacity-0 hover:opacity-100 transition-opacity
+                                   bg-black bg-opacity-50 px-2 py-1 rounded">
+                            ${customImage.name}
+                        </span>
+                    </div>
+                    <div class="absolute top-1 right-1 bg-primary text-white text-xs px-2 py-1 rounded">
+                        مخصصة
+                    </div>
+                `;
+                
+                imageDiv.addEventListener('click', () => selectImage(customImage, imageDiv));
+                imageGallery.insertBefore(imageDiv, imageGallery.firstChild);
+                selectImage(customImage, imageDiv);
+            };
+            reader.readAsDataURL(file);
         }
 
-        function doubleTime() {
-            socket.emit('extend-time', { type: 'double' });
+        // عرض الصورة في نافذة منبثقة
+        function showImageModal(imageUrl) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="relative max-w-4xl max-h-full">
+                    <img src="${imageUrl}" alt="صورة مكبرة" class="max-w-full max-h-full object-contain rounded-lg">
+                    <button onclick="this.closest('.fixed').remove()" 
+                            class="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 
+                                   flex items-center justify-center hover:bg-opacity-75 transition-colors">
+                        ✕
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        // دالة مساعدة لتجنب XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // عرض تنبيه مخصص
+        function showCustomAlert(message) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full p-6">
+                    <div class="text-center">
+                        <div class="text-4xl mb-4">⚠️</div>
+                        <p class="text-gray-700 dark:text-gray-300 mb-4">${message}</p>
+                        <button onclick="this.closest('.fixed').remove()" 
+                                class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg transition-colors">
+                            حسناً
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // إعادة تعيين النموذج
+        function resetForm() {
+            selectedImage = null;
+            passwordInput.value = '';
+            messageInput.value = '';
+            messages = [];
+            currentRoomKey = null;
+            currentUser = null;
+            
+            document.querySelectorAll('.border-primary').forEach(el => {
+                el.classList.remove('border-primary');
+                el.classList.add('border-transparent');
+            });
+            
+            updateEnterButton();
         }
 
         // مستمعي الأحداث
@@ -861,8 +863,27 @@
             if (file) handleImageSend(file);
         });
 
+        document.getElementById('addTimeBtn').addEventListener('click', addTime);
+        document.getElementById('doubleTimeBtn').addEventListener('click', doubleTime);
+
         leaveRoomBtn.addEventListener('click', () => {
-            socket.emit('leave-room');
+            if (countdownInterval) clearInterval(countdownInterval);
+            
+            // رسالة مغادرة
+            if (currentRoomKey && currentUser) {
+                const leaveMessage = {
+                    id: Date.now(),
+                    text: `${currentUser} غادر المحادثة`,
+                    timestamp: new Date(),
+                    type: 'text',
+                    sender: 'system'
+                };
+                addMessage(leaveMessage);
+            }
+            
+            chatScreen.classList.add('hidden');
+            loginScreen.classList.remove('hidden');
+            resetForm();
         });
 
         newRoomBtn.addEventListener('click', () => {
@@ -876,20 +897,6 @@
             loadImageGallery();
             setupDurationSelection();
             updateEnterButton();
-            
-            // أزرار التحكم في الوقت - سيتم إضافتها بعد تحميل الصفحة
-            setTimeout(() => {
-                const addTimeBtn = document.getElementById('addTimeBtn');
-                const doubleTimeBtn = document.getElementById('doubleTimeBtn');
-                
-                if (addTimeBtn) {
-                    addTimeBtn.addEventListener('click', addTime);
-                }
-                
-                if (doubleTimeBtn) {
-                    doubleTimeBtn.addEventListener('click', doubleTime);
-                }
-            }, 100);
         });
     </script>
 </body>
