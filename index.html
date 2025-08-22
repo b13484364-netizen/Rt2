@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق المحادثة الآمن - الصفحة الرئيسية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#7C3AED'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .dark .gradient-bg { background: linear-gradient(135deg, #2D3748 0%, #1A202C 100%); }
+        .image-hover { transition: all 0.3s ease; }
+        .image-hover:hover { transform: scale(1.05); }
+        input[type="password"], input[type="text"], input[type="number"] { font-size: 16px; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
+    
+    <!-- شاشة إعداد الغرفة -->
+    <div class="min-h-screen gradient-bg flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full p-8 fade-in">
+            <!-- العنوان -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-800 dark:text-white mb-4">🔐 تطبيق المحادثة الآمن</h1>
+                <p class="text-gray-600 dark:text-gray-300 text-lg">إنشئ غرفة محادثة آمنة ومشفرة</p>
+                <div class="mt-4 flex items-center justify-center space-x-6 space-x-reverse text-sm text-gray-500">
+                    <div class="flex items-center">
+                        <span class="w-2 h-2 bg-green-500 rounded-full ml-2"></span>
+                        محادثة جماعية
+                    </div>
+                    <div class="flex items-center">
+                        <span class="w-2 h-2 bg-blue-500 rounded-full ml-2"></span>
+                        تشفير آمن
+                    </div>
+                    <div class="flex items-center">
+                        <span class="w-2 h-2 bg-purple-500 rounded-full ml-2"></span>
+                        وقت مرن
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- الجانب الأيسر -->
+                <div class="space-y-6">
+                    <!-- معلومات المستخدم -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white flex items-center">
+                            👤 معلومات المستخدم
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
+                                    اسم المستخدم:
+                                </label>
+                                <input type="text" id="usernameInput" 
+                                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg 
+                                              focus:outline-none focus:border-primary dark:bg-gray-600 dark:text-white text-base"
+                                       placeholder="أدخل اسمك أو اتركه فارغاً للحصول على اسم تلقائي"
+                                       maxlength="30">
+                                <p class="text-xs text-gray-500 mt-1">إذا تركته فارغاً، ستحصل على اسم تلقائي مثل "المستخدم الأول"</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
+                                    كلمة المرور:
+                                </label>
+                                <input type="password" id="passwordInput" 
+                                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg 
+                                              focus:outline-none focus:border-primary dark:bg-gray-600 dark:text-white text-base"
+                                       placeholder="أدخل كلمة مرور قوية"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- مدة الغرفة -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white flex items-center">
+                            ⏰ مدة الغرفة
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <button type="button" class="duration-btn bg-primary text-white py-3 px-4 rounded-lg transition-all text-sm font-medium hover:bg-primary/90"
+                                    data-duration="5">5 دقائق</button>
+                            <button type="button" class="duration-btn bg-gray-200 dark:bg-gray-600 hover:bg-primary hover:text-white 
+                                                         text-gray-700 dark:text-gray-300 py-3 px-4 rounded-lg transition-all text-sm font-medium"
+                                    data-duration="10">10 دقائق</button>
+                            <button type="button" class="duration-btn bg-gray-200 dark:bg-gray-600 hover:bg-primary hover:text-white 
+                                                         text-gray-700 dark:text-gray-300 py-3 px-4 rounded-lg transition-all text-sm font-medium"
+                                    data-duration="15">15 دقيقة</button>
+                            <button type="button" class="duration-btn bg-gray-200 dark:bg-gray-600 hover:bg-primary hover:text-white 
+                                                         text-gray-700 dark:text-gray-300 py-3 px-4 rounded-lg transition-all text-sm font-medium"
+                                    data-duration="30">30 دقيقة</button>
+                        </div>
+                        <div class="flex items-center space-x-4 space-x-reverse">
+                            <label class="text-gray-700 dark:text-gray-300 text-sm font-medium">مدة مخصصة:</label>
+                            <input type="number" id="customDuration" min="1" max="120" 
+                                   class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                                          focus:outline-none focus:border-primary dark:bg-gray-600 dark:text-white text-base w-20"
+                                   placeholder="60">
+                            <span class="text-gray-500 text-sm">دقيقة</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الجانب الأيمن -->
+                <div class="space-y-6">
+                    <!-- معرض الصور -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white flex items-center">
+                            🖼️ اختر رمز الغرفة
+                        </h3>
+                        <div id="imageGallery" class="grid grid-cols-4 gap-3 mb-4 min-h-[200px]">
+                            <!-- سيتم ملء الصور هنا بواسطة JavaScript -->
+                        </div>
+                        
+                        <button id="uploadImageBtn"
+                                class="w-full bg-secondary hover:bg-secondary/90 text-white font-medium py-3 px-6 rounded-lg 
+                                       transition-all duration-300 flex items-center justify-center space-x-2 space-x-reverse">
+                            <span>📤</span>
+                            <span>رفع صورة مخصصة</span>
+                        </button>
+                        <input type="file" id="customImageInput" accept="image/*" class="hidden">
+                    </div>
+
+                    <!-- زر الإنشاء -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl">
+                        <button id="createRoomBtn" 
+                                class="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 
+                                       text-white font-bold py-4 px-6 rounded-xl text-lg
+                                       transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
+                                       shadow-lg hover:shadow-xl">
+                            <span id="createBtnText">🚀 إنشاء الغرفة</span>
+                        </button>
+                        
+                        <div id="roomKeyDisplay" class="hidden mt-4 p-4 bg-green-100 dark:bg-green-900 rounded-lg">
+                            <p class="text-sm text-green-800 dark:text-green-200 font-medium">مفتاح الغرفة:</p>
+                            <p id="roomKeyText" class="text-lg font-mono text-green-900 dark:text-green-100 break-all"></p>
+                            <button id="copyKeyBtn" class="mt-2 text-sm bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded transition-colors">
+                                📋 نسخ المفتاح
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تعليمات -->
+            <div class="mt-8 p-6 bg-blue-50 dark:bg-blue-900/30 rounded-xl border border-blue-200 dark:border-blue-800">
+                <h3 class="font-semibold mb-3 text-blue-800 dark:text-blue-200 flex items-center">
+                    💡 كيفية الاستخدام
+                </h3>
+                <div class="grid md:grid-cols-2 gap-4 text-sm text-blue-700 dark:text-blue-300">
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <span class="text-blue-500 ml-2">1️⃣</span>
+                            اختر اسم مستخدم أو اتركه فارغاً
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-blue-500 ml-2">2️⃣</span>
+                            اختر صورة رمزية للغرفة
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-blue-500 ml-2">3️⃣</span>
+                            حدد مدة الغرفة المناسبة
+                        </li>
+                    </ul>
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <span class="text-blue-500 ml-2">4️⃣</span>
+                            أدخل كلمة مرور قوية
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-blue-500 ml-2">5️⃣</span>
+                            انقر "إنشاء الغرفة"
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-blue-500 ml-2">6️⃣</span>
+                            شارك المفتاح مع الأصدقاء
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- روابط إضافية -->
+            <div class="mt-6 flex justify-center space-x-6 space-x-reverse text-sm">
+                <a href="/dashboard" class="text-gray-500 hover:text-primary transition-colors">📊 إحصائيات الخادم</a>
+                <a href="/stats" class="text-gray-500 hover:text-primary transition-colors">📈 الإحصائيات السريعة</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // إعداد الوضع المظلم
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // الصور المتاحة - SVG مدمجة
+        const availableImages = [
+            {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjM0I4MkY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2KfZhNis2KjYp9mEINin2YTYq9mE2KzZiTwvdGV4dD48L3N2Zz4=',
+                name: 'الجبال الثلجية',
+                id: 'mountain_snow',
+                emoji: '🏔️'
+            },
+            {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTBCOTgxIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2KfZhNi62KfYqNipINin2YTYrtiu2LHYp9ihPC90ZXh0Pjwvc3ZnPg==',
+                name: 'الغابة الخضراء',
+                id: 'green_forest',
+                emoji: '🌲'
+            },
+            {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRjU5RTBCIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2KPYtNis2KfYsSDYp9mE2YbYrtmK2YQ8L3RleHQ+PC9zdmc+',
+                name: 'أشجار النخيل',
+                id: 'palm_trees',
+                emoji: '🌴'
+            },
+            {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOEI1Q0Y2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2KfZhNiq2YLZhtmK2Kkg2KfZhNit2K/Zitir2Kk8L3RleHQ+PC9zdmc+',
+                name: 'التقنية الحديثة',
+                id: 'modern_tech',
+                emoji: '💻'
+            },
+            {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjODRDQzE2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2LrYp9io2Kkg2KfZhNiu2YrYstix2KfZhDwvdGV4dD48L3N2Zz4=',
+                name: 'غابة الخيزران',
+                id: 'bamboo_forest',
+                emoji: '🎋'
+            },
+            {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRUM0ODk5Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2YLZhdipINin2YTYrNio2YQ8L3RleHQ+PC9zdmc+',
+                name: 'قمة الجبل',
+                id: 'mountain_peak',
+                emoji: '⛰️'
+            },
+            {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMDZCNkQ0Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2KfZhNi52KfZhNmFINin2YTZhdmI2KfYpNmKPC90ZXh0Pjwvc3ZnPg==',
+                name: 'العالم المائي',
+                id: 'underwater',
+                emoji: '🌊'
+            },
+            {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRUY0NDQ0Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2YXYutim2YXYsSDYp9mE2KrYs9mE2YI8L3RleHQ+PC9zdmc+',
+                name: 'مغامر التسلق',
+                id: 'mountain_hiker',
+                emoji: '🧗'
+            }
+        ];
+
+        // متغيرات التطبيق
+        let selectedImage = null;
+        let selectedDuration = 5;
+
+        // عناصر DOM
+        const imageGallery = document.getElementById('imageGallery');
+        const usernameInput = document.getElementById('usernameInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const customDuration = document.getElementById('customDuration');
+        const createRoomBtn = document.getElementById('createRoomBtn');
+        const createBtnText = document.getElementById('createBtnText');
+        const uploadImageBtn = document.getElementById('uploadImageBtn');
+        const customImageInput = document.getElementById('customImageInput');
+        const roomKeyDisplay = document.getElementById('roomKeyDisplay');
+        const roomKeyText = document.getElementById('roomKeyText');
+        const copyKeyBtn = document.getElementById('copyKeyBtn');
+
+        // تحميل الصور في المعرض
+        function loadImageGallery() {
+            imageGallery.innerHTML = '';
+
+            availableImages.forEach((image, index) => {
+                const imageDiv = document.createElement('div');
+                imageDiv.className = `image-hover cursor-pointer rounded-lg overflow-hidden border-3 border-transparent 
+                                     hover:border-primary transition-all aspect-square relative bg-gray-100 dark:bg-gray-600`;
+                
+                imageDiv.innerHTML = `
+                    <img src="${image.url}" alt="${image.name}" 
+                         class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all 
+                                flex items-center justify-center">
+                        <span class="text-white text-xs font-bold opacity-0 hover:opacity-100 transition-opacity
+                                   bg-black bg-opacity-70 px-2 py-1 rounded">
+                            ${image.emoji} ${image.name}
+                        </span>
+                    </div>
+                    <div class="absolute top-1 right-1 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+                        ${index + 1}
+                    </div>
+                `;
+                
+                imageDiv.addEventListener('click', () => selectImage(image, imageDiv));
+                imageGallery.appendChild(imageDiv);
+            });
+        }
+
+        // اختيار صورة
+        function selectImage(image, element) {
+            // إزالة التحديد السابق
+            document.querySelectorAll('.border-primary').forEach(el => {
+                el.classList.remove('border-primary');
+                el.classList.add('border-transparent');
+            });
+            
+            // تحديد الصورة الجديدة
+            element.classList.add('border-primary');
+            element.classList.remove('border-transparent');
+            
+            selectedImage = image;
+            updateCreateButton();
+        }
+
+        // إدارة اختيار المدة
+        function setupDurationSelection() {
+            const durationButtons = document.querySelectorAll('.duration-btn');
+            
+            durationButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // إزالة التحديد من جميع الأزرار
+                    durationButtons.forEach(b => {
+                        b.classList.remove('bg-primary', 'text-white');
+                        b.classList.add('bg-gray-200', 'dark:bg-gray-600', 'text-gray-700', 'dark:text-gray-300');
+                    });
+                    
+                    // تحديد الزر المضغوط
+                    btn.classList.add('bg-primary', 'text-white');
+                    btn.classList.remove('bg-gray-200', 'dark:bg-gray-600', 'text-gray-700', 'dark:text-gray-300');
+                    
+                    selectedDuration = parseInt(btn.dataset.duration);
+                    if (customDuration) customDuration.value = '';
+                });
+            });
+            
+            // مدة مخصصة
+            if (customDuration) {
+                customDuration.addEventListener('input', () => {
+                    if (customDuration.value) {
+                        selectedDuration = parseInt(customDuration.value) || 5;
+                        
+                        // إزالة التحديد من الأزرار المحددة مسبقاً
+                        durationButtons.forEach(b => {
+                            b.classList.remove('bg-primary', 'text-white');
+                            b.classList.add('bg-gray-200', 'dark:bg-gray-600', 'text-gray-700', 'dark:text-gray-300');
+                        });
+                    }
+                });
+            }
+        }
+
+        // تحديث زر الإنشاء
+        function updateCreateButton() {
+            const hasImage = selectedImage !== null;
+            const hasPassword = passwordInput.value.trim().length > 0;
+            createRoomBtn.disabled = !(hasImage && hasPassword);
+            
+            if (hasImage && hasPassword) {
+                createRoomBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                createBtnText.textContent = '🚀 إنشاء الغرفة';
+            } else {
+                createRoomBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                createBtnText.textContent = '⚠️ يرجى اختيار صورة وكلمة مرور';
+            }
+        }
+
+        // إنشاء مفتاح الغرفة
+        function generateRoomKey(image, password, username) {
+            const timestamp = Date.now().toString(36);
+            const combined = `${image.id}_${password}_${username || 'anonymous'}_${timestamp}`;
+            let hash = 0;
+            for (let i = 0; i < combined.length; i++) {
+                const char = combined.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(36).toUpperCase();
+        }
+
+        // إنشاء الغرفة
+        function createRoom() {
+            if (!selectedImage || !passwordInput.value.trim()) {
+                showAlert('يرجى اختيار صورة وإدخال كلمة مرور');
+                return;
+            }
+
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            const roomKey = generateRoomKey(selectedImage, password, username);
+
+            // حفظ بيانات الغرفة
+            const roomData = {
+                roomKey: roomKey,
+                image: selectedImage,
+                duration: selectedDuration,
+                password: password,
+                username: username,
+                createdAt: Date.now()
+            };
+
+            localStorage.setItem('roomData', JSON.stringify(roomData));
+
+            // عرض مفتاح الغرفة
+            roomKeyText.textContent = roomKey;
+            roomKeyDisplay.classList.remove('hidden');
+
+            // تحديث زر الإنشاء
+            createBtnText.innerHTML = '💬 دخول الغرفة';
+            createRoomBtn.onclick = () => {
+                window.location.href = `chat.html?room=${roomKey}`;
+            };
+        }
+
+        // نسخ مفتاح الغرفة
+        function copyRoomKey() {
+            navigator.clipboard.writeText(roomKeyText.textContent).then(() => {
+                const originalText = copyKeyBtn.textContent;
+                copyKeyBtn.textContent = '✅ تم النسخ!';
+                copyKeyBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                copyKeyBtn.classList.add('bg-green-700');
+                
+                setTimeout(() => {
+                    copyKeyBtn.textContent = originalText;
+                    copyKeyBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                    copyKeyBtn.classList.remove('bg-green-700');
+                }, 2000);
+            });
+        }
+
+        // رفع صورة مخصصة
+        function handleCustomImage(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                showAlert('يرجى اختيار ملف صورة صحيح');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const customImage = {
+                    url: e.target.result,
+                    name: 'صورة مخصصة',
+                    id: 'custom_' + Date.now(),
+                    emoji: '🖼️'
+                };
+                
+                const imageDiv = document.createElement('div');
+                imageDiv.className = `image-hover cursor-pointer rounded-lg overflow-hidden border-3 border-transparent 
+                                     hover:border-primary transition-all aspect-square relative bg-gray-100 dark:bg-gray-600`;
+                imageDiv.innerHTML = `
+                    <img src="${customImage.url}" alt="${customImage.name}" 
+                         class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all 
+                                flex items-center justify-center">
+                        <span class="text-white text-xs font-bold opacity-0 hover:opacity-100 transition-opacity
+                                   bg-black bg-opacity-70 px-2 py-1 rounded">
+                            ${customImage.emoji} ${customImage.name}
+                        </span>
+                    </div>
+                    <div class="absolute top-1 left-1 bg-primary text-white text-xs px-2 py-1 rounded">
+                        مخصصة
+                    </div>
+                `;
+                
+                imageDiv.addEventListener('click', () => selectImage(customImage, imageDiv));
+                imageGallery.insertBefore(imageDiv, imageGallery.firstChild);
+                selectImage(customImage, imageDiv);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // عرض تنبيه
+        function showAlert(message) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full p-6 fade-in">
+                    <div class="text-center">
+                        <div class="text-4xl mb-4">⚠️</div>
+                        <p class="text-gray-700 dark:text-gray-300 mb-4">${message}</p>
+                        <button onclick="this.closest('.fixed').remove()" 
+                                class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg transition-colors">
+                            حسناً
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // مستمعي الأحداث
+        passwordInput.addEventListener('input', updateCreateButton);
+        usernameInput.addEventListener('input', updateCreateButton);
+        createRoomBtn.addEventListener('click', createRoom);
+        copyKeyBtn.addEventListener('click', copyRoomKey);
+        uploadImageBtn.addEventListener('click', () => customImageInput.click());
+        customImageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleCustomImage(file);
+        });
+
+        // Enter للإنشاء
+        [usernameInput, passwordInput].forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !createRoomBtn.disabled) {
+                    createRoom();
+                }
+            });
+        });
+
+        // تهيئة التطبيق
+        document.addEventListener('DOMContentLoaded', () => {
+            loadImageGallery();
+            setupDurationSelection();
+            updateCreateButton();
+        });
+    </script>
+</body>
+</html>
