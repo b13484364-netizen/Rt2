@@ -40,6 +40,11 @@
             80%, 100% { opacity: 0; }
         }
         input[type="text"], textarea { font-size: 16px; }
+        .countdown-warning { animation: pulse 1s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
@@ -89,25 +94,9 @@
                         </div>
                     </div>
                     
-                    <!-- أدوات التحكم -->
+                    <!-- مؤقت ثابت وقائمة الخيارات -->
                     <div class="flex items-center space-x-4 space-x-reverse">
-                        <!-- أزرار التحكم في الوقت -->
-                        <div class="hidden md:flex items-center space-x-2 space-x-reverse bg-gray-100 dark:bg-gray-700 rounded-lg p-2">
-                            <button id="addTimeBtn" 
-                                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition-colors flex items-center space-x-1 space-x-reverse"
-                                    title="إضافة 5 دقائق">
-                                <span>⏰</span>
-                                <span>+5</span>
-                            </button>
-                            <button id="doubleTimeBtn" 
-                                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition-colors flex items-center space-x-1 space-x-reverse"
-                                    title="مضاعفة الوقت">
-                                <span>🚀</span>
-                                <span>×2</span>
-                            </button>
-                        </div>
-                        
-                        <!-- مؤقت العد التنازلي -->
+                        <!-- مؤقت العد التنازلي (ثابت) -->
                         <div class="text-center bg-gray-100 dark:bg-gray-700 rounded-lg p-3">
                             <div id="timeRemaining" class="text-xl font-bold text-primary">00:00</div>
                             <div class="text-xs text-gray-500">الوقت المتبقي</div>
@@ -178,18 +167,6 @@
                     </div>
                 </div>
                 
-                <!-- شريط أدوات إضافي للموبايل -->
-                <div class="md:hidden mt-3 flex justify-center space-x-4 space-x-reverse">
-                    <button id="addTimeBtnMobile" 
-                            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
-                        ⏰ +5 دقائق
-                    </button>
-                    <button id="doubleTimeBtnMobile" 
-                            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
-                        🚀 مضاعفة الوقت
-                    </button>
-                </div>
-                
                 <input type="file" id="imageMessageInput" accept="image/*" class="hidden">
             </div>
         </div>
@@ -247,7 +224,6 @@
         let roomDuration = 5 * 60 * 1000;
         let countdownInterval = null;
         let messages = [];
-        let timeExtensions = 0;
         let currentUser = null;
         let isConnected = false;
         let userCount = 0;
@@ -271,10 +247,6 @@
         const imageMessageInput = document.getElementById('imageMessageInput');
         const timeRemaining = document.getElementById('timeRemaining');
         const totalTimeDisplay = document.getElementById('totalTimeDisplay');
-        const addTimeBtn = document.getElementById('addTimeBtn');
-        const doubleTimeBtn = document.getElementById('doubleTimeBtn');
-        const addTimeBtnMobile = document.getElementById('addTimeBtnMobile');
-        const doubleTimeBtnMobile = document.getElementById('doubleTimeBtnMobile');
         const menuBtn = document.getElementById('menuBtn');
         const menuDropdown = document.getElementById('menuDropdown');
         const shareRoomBtn = document.getElementById('shareRoomBtn');
@@ -293,20 +265,25 @@
         // تحميل بيانات الغرفة من localStorage
         function loadRoomData() {
             const urlParams = getUrlParams();
-            const roomData = JSON.parse(localStorage.getItem('roomData') || '{}');
-            
-            if (urlParams.room) {
-                currentRoomKey = urlParams.room;
-                return {
-                    roomKey: currentRoomKey,
-                    image: roomData.image,
-                    duration: roomData.duration || 5,
-                    username: roomData.username,
-                    createdAt: roomData.createdAt
-                };
+            if (!urlParams.room) {
+                console.error('لا يوجد مفتاح غرفة في URL');
+                return null;
             }
             
-            return null;
+            currentRoomKey = urlParams.room;
+            
+            // محاولة تحميل البيانات المحفوظة
+            const roomData = JSON.parse(localStorage.getItem(`roomData_${currentRoomKey}`) || 'null');
+            
+            console.log('تحميل بيانات الغرفة:', currentRoomKey, roomData);
+            
+            return {
+                roomKey: currentRoomKey,
+                image: roomData?.image,
+                duration: roomData?.duration || 5,
+                username: roomData?.username,
+                createdAt: roomData?.createdAt
+            };
         }
 
         // إدارة حالة الاتصال
@@ -367,6 +344,8 @@
                 const room = data.room;
                 const user = data.user;
                 
+                console.log('انضممت للغرفة بنجاح:', data);
+                
                 // إخفاء شاشة التحميل
                 loadingScreen.classList.add('hidden');
                 chatScreen.classList.remove('hidden');
@@ -374,7 +353,6 @@
                 // تحديث بيانات الغرفة
                 roomStartTime = room.startTime;
                 roomDuration = room.duration;
-                timeExtensions = room.extensions;
                 messages = room.messages;
                 currentUser = user;
                 userCount = room.userCount;
@@ -406,6 +384,7 @@
         });
 
         socket.on('join-error', (data) => {
+            console.error('خطأ في الانضمام:', data);
             showAlert(data.message || 'فشل الانضمام للغرفة');
             setTimeout(() => {
                 window.location.href = '/';
@@ -430,31 +409,28 @@
             console.log('مستخدم غادر:', data.user.username);
         });
 
-        socket.on('time-extended', (data) => {
-            roomDuration = data.newDuration;
-            timeExtensions = data.extensions;
-            updateTotalTimeDisplay();
-            
-            const extendType = data.type === 'add' ? 'إضافة 5 دقائق' : 'مضاعفة الوقت';
-            showNotification(`${data.by} قام بـ ${extendType}!`, 'success');
-        });
-
         socket.on('left-room', () => {
             window.location.href = '/';
         });
 
         // دالة الانضمام للغرفة
         function joinRoom() {
-            if (!isConnected) return;
+            if (!isConnected) {
+                console.log('غير متصل بالخادم، سيتم المحاولة عند الاتصال');
+                return;
+            }
             
             const roomData = loadRoomData();
             if (!roomData || !roomData.roomKey) {
+                console.error('بيانات غرفة غير صحيحة:', roomData);
                 showAlert('بيانات غرفة غير صحيحة');
                 setTimeout(() => {
                     window.location.href = '/';
                 }, 2000);
                 return;
             }
+            
+            console.log('محاولة الانضمام للغرفة:', roomData);
             
             socket.emit('join-room', {
                 roomKey: roomData.roomKey,
@@ -496,7 +472,7 @@
                 
                 // تغيير لون المؤقت حسب الوقت المتبقي
                 if (remaining < 60000) { // أقل من دقيقة
-                    timeRemaining.className = 'text-xl font-bold text-red-500';
+                    timeRemaining.className = 'text-xl font-bold text-red-500 countdown-warning';
                 } else if (remaining < 300000) { // أقل من 5 دقائق
                     timeRemaining.className = 'text-xl font-bold text-yellow-500';
                 } else {
@@ -509,10 +485,7 @@
         function updateTotalTimeDisplay() {
             if (totalTimeDisplay) {
                 const totalMinutes = Math.floor(roomDuration / 60000);
-                totalTimeDisplay.textContent = `المدة: ${totalMinutes} دقيقة`;
-                if (timeExtensions > 0) {
-                    totalTimeDisplay.textContent += ` (+${timeExtensions})`;
-                }
+                totalTimeDisplay.textContent = `المدة: ${totalMinutes} دقيقة (ثابتة)`;
             }
         }
 
@@ -637,16 +610,6 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        // إضافة وقت
-        function addTime() {
-            socket.emit('extend-time', { type: 'add' });
-        }
-
-        // مضاعفة الوقت
-        function doubleTime() {
-            socket.emit('extend-time', { type: 'double' });
-        }
-
         // مشاركة الغرفة
         function shareRoom() {
             const shareText = `🔐 انضم لغرفة المحادثة الآمنة!\n\nمفتاح الغرفة: ${currentRoomKey}\nالرابط: ${window.location.origin}/chat.html?room=${currentRoomKey}`;
@@ -760,14 +723,6 @@
             if (file) handleImageSend(file);
         });
 
-        // أزرار التحكم في الوقت
-        [addTimeBtn, addTimeBtnMobile].forEach(btn => {
-            if (btn) btn.addEventListener('click', addTime);
-        });
-        [doubleTimeBtn, doubleTimeBtnMobile].forEach(btn => {
-            if (btn) btn.addEventListener('click', doubleTime);
-        });
-
         // قائمة الخيارات
         menuBtn.addEventListener('click', () => {
             menuDropdown.classList.toggle('hidden');
@@ -800,6 +755,16 @@
         // تهيئة التطبيق
         document.addEventListener('DOMContentLoaded', () => {
             updateCharCount();
+            
+            // التحقق من وجود بيانات الغرفة
+            const roomData = loadRoomData();
+            if (!roomData) {
+                showAlert('لم يتم العثور على بيانات الغرفة');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+                return;
+            }
             
             // محاولة الانضمام إذا كان متصلاً بالفعل
             if (isConnected) {
