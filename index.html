@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق المحادثة الآمن</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#7C3AED'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .dark .gradient-bg { background: linear-gradient(135deg, #2D3748 0%, #1A202C 100%); }
+        .message-animation { animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .image-hover { transition: all 0.3s ease; }
+        .image-hover:hover { 
+            transform: translateY(-2px); 
+        }
+        input[type="password"], input[type="text"], input[type="number"], textarea { font-size: 16px; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .notification {
+            animation: slideInRight 0.3s ease-out;
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        .countdown-warning { animation: pulse 1s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* إصلاحات أساسية لعرض الصور */
+        #imageGallery {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            min-height: 200px;
+            width: 100%;
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            aspect-ratio: 1/1;
+            background-color: #f3f4f6;
+            border: 3px solid transparent;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .gallery-item.selected {
+            border-color: #5D5CDE !important;
+        }
+
+        .gallery-item:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .gallery-item-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+        }
+
+        .gallery-item:hover .gallery-item-overlay {
+            opacity: 1;
+        }
+
+        .gallery-item-overlay-text {
+            color: white;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .gallery-item-number {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border-radius: 50%;
+            width: 1.5rem;
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .image-upload-container {
+            border: 2px dashed #d1d5db;
+            background-color: #f9fafb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .image-upload-container:hover {
+            background-color: #f3f4f6;
+        }
+
+        @media (max-width: 1024px) {
+            #imageGallery {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            #imageGallery {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-300">
+
+    <!-- إشعارات الاتصال -->
+    <div id="connectionStatus" class="hidden fixed top-4 right-4 z-50 notification">
+        <div class="bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2 space-x-reverse">
+            <div class="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+            <span id="statusText">محاولة الاتصال...</span>
+        </div>
+    </div>
+
+    <!-- شاشة إعداد الغرفة -->
+    <div id="loginScreen" class="min-h-screen gradient-bg flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full p-8 fade-in">
+            <!-- العنوان -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-800 dark:text-white mb-4">🔐 تطبيق المحادثة الآمن</h1>
+                <p class="text-gray-600 dark:text-gray-300 text-lg">اختر نفس الصورة وكلمة المرور للانضمام لنفس الغرفة</p>
+                <div class="mt-4 flex items-center justify-center space-x-6 space-x-reverse text-sm text-gray-500">
+                    <div class="flex items-center">
+                        <span class="w-2 h-2 bg-green-500 rounded-full ml-2"></span>
+                        محادثة جماعية
+                    </div>
+                    <div class="flex items-center">
+                        <span class="w-2 h-2 bg-blue-500 rounded-full ml-2"></span>
+                        تشفير آمن
+                    </div>
+                    <div class="flex items-center">
+                        <span class="w-2 h-2 bg-purple-500 rounded-full ml-2"></span>
+                        وقت محدد
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- الجانب الأيسر -->
+                <div class="space-y-6">
+                    <!-- معلومات المستخدم -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white flex items-center">
+                            👤 معلومات المستخدم
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
+                                    اسم المستخدم (اختياري):
+                                </label>
+                                <input type="text" id="usernameInput"
+                                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
+                                              focus:outline-none focus:border-primary dark:bg-gray-600 dark:text-white text-base"
+                                       placeholder="أدخل اسمك أو اتركه فارغاً للحصول على اسم تلقائي"
+                                       maxlength="30">
+                                <p class="text-xs text-gray-500 mt-1">إذا تركته فارغاً، ستحصل على اسم تلقائي مثل "المستخدم الأول"</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">
+                                    كلمة المرور:
+                                </label>
+                                <input type="password" id="passwordInput"
+                                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg
+                                              focus:outline-none focus:border-primary dark:bg-gray-600 dark:text-white text-base"
+                                       placeholder="أدخل كلمة مرور قوية"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- مدة الغرفة -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white flex items-center">
+                            ⏰ مدة الغرفة (ثابتة)
+                        </h3>
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <button type="button" class="duration-btn bg-primary text-white py-3 px-4 rounded-lg transition-all text-sm font-medium hover:bg-primary/90"
+                                    data-duration="5">5 دقائق</button>
+                            <button type="button" class="duration-btn bg-gray-200 dark:bg-gray-600 hover:bg-primary hover:text-white
+                                                         text-gray-700 dark:text-gray-300 py-3 px-4 rounded-lg transition-all text-sm font-medium"
+                                    data-duration="10">10 دقائق</button>
+                            <button type="button" class="duration-btn bg-gray-200 dark:bg-gray-600 hover:bg-primary hover:text-white
+                                                         text-gray-700 dark:text-gray-300 py-3 px-4 rounded-lg transition-all text-sm font-medium"
+                                    data-duration="15">15 دقيقة</button>
+                            <button type="button" class="duration-btn bg-gray-200 dark:bg-gray-600 hover:bg-primary hover:text-white
+                                                         text-gray-700 dark:text-gray-300 py-3 px-4 rounded-lg transition-all text-sm font-medium"
+                                    data-duration="30">30 دقيقة</button>
+                        </div>
+                        <div class="flex items-center space-x-4 space-x-reverse">
+                            <label class="text-gray-700 dark:text-gray-300 text-sm font-medium">مدة مخصصة:</label>
+                            <input type="number" id="customDuration" min="1" max="120"
+                                   class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                                          focus:outline-none focus:border-primary dark:bg-gray-600 dark:text-white text-base w-20"
+                                   placeholder="60">
+                            <span class="text-gray-500 text-sm">دقيقة</span>
+                        </div>
+                        <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <p class="text-sm text-blue-700 dark:text-blue-300">
+                                💡 <strong>ملاحظة:</strong> مدة الغرفة ثابتة ولا يمكن تعديلها من داخل الغرفة
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الجانب الأيمن -->
+                <div class="space-y-6">
+                    <!-- معرض الصور -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white flex items-center">
+                            🖼️ اختر رمز الغرفة
+                        </h3>
+                        <div id="imageGallery" class="grid grid-cols-4 gap-3 mb-4 min-h-[200px]">
+                            <!-- سيتم ملء الصور هنا بواسطة JavaScript -->
+                        </div>
+
+                        <button id="uploadImageBtn"
+                                class="w-full bg-secondary hover:bg-secondary/90 text-white font-medium py-3 px-6 rounded-lg
+                                       transition-all duration-300 flex items-center justify-center space-x-2 space-x-reverse">
+                            <span>📤</span>
+                            <span>رفع صورة مخصصة</span>
+                        </button>
+                        <input type="file" id="customImageInput" accept="image/*" class="hidden">
+                    </div>
+
+                    <!-- زر دخول الغرفة -->
+                    <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl">
+                        <button id="enterRoomBtn"
+                                class="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90
+                                       text-white font-bold py-4 px-6 rounded-xl text-lg
+                                       transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
+                                       shadow-lg hover:shadow-xl">
+                            <span id="enterBtnText">💬 دخول الغرفة</span>
+                        </button>
+
+                        <div class="mt-4 p-3 bg-green-50 dark:bg-green-900/30 rounded-lg border border-green-200 dark:border-green-800">
+                            <p class="text-sm text-green-700 dark:text-green-300">
+                                ✨ <strong>نصيحة:</strong> شارك نفس الصورة وكلمة المرور مع أصدقائك للانضمام لنفس الغرفة
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تعليمات -->
+            <div class="mt-8 p-6 bg-blue-50 dark:bg-blue-900/30 rounded-xl border border-blue-200 dark:border-blue-800">
+                <h3 class="font-semibold mb-3 text-blue-800 dark:text-blue-200 flex items-center">
+                    💡 كيفية الاستخدام
+                </h3>
+                <div class="grid md:grid-cols-2 gap-4 text-sm text-blue-700 dark:text-blue-300">
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <span class="text-blue-500 ml-2">1️⃣</span>
+                            اختر اسم مستخدم أو اتركه فارغاً
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-blue-500 ml-2">2️⃣</span>
+                            اختر صورة رمزية للغرفة
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-blue-500 ml-2">3️⃣</span>
+                            حدد مدة الغرفة (ثابتة)
+                        </li>
+                    </ul>
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <span class="text-blue-500 ml-2">4️⃣</span>
+                            أدخل كلمة مرور قوية
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-blue-500 ml-2">5️⃣</span>
+                            انقر "دخول الغرفة"
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-blue-500 ml-2">6️⃣</span>
+                            شارك الصورة وكلمة المرور مع الأصدقاء
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- روابط إضافية -->
+            <div class="mt-6 flex justify-center space-x-6 space-x-reverse text-sm">
+                <a href="/dashboard" class="text-gray-500 hover:text-primary transition-colors">📊 إحصائيات الخادم</a>
+                <a href="/stats" class="text-gray-500 hover:text-primary transition-colors">📈 الإحصائيات السريعة</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- غرفة المحادثة -->
+    <div id="chatScreen" class="hidden min-h-screen flex flex-col">
+        <!-- شريط علوي -->
+        <div class="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700">
+            <div class="max-w-6xl mx-auto px-4 py-3">
+                <div class="flex items-center justify-between">
+                    <!-- معلومات الغرفة -->
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <div id="roomImagePreview" class="w-12 h-12 rounded-full overflow-hidden border-3 border-primary shadow-lg">
+                            <!-- صورة الغرفة -->
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-gray-800 dark:text-white flex items-center">
+                                🔐 غرفة المحادثة الآمنة
+                            </h1>
+                            <div class="flex items-center space-x-4 space-x-reverse text-sm text-gray-600 dark:text-gray-300">
+                                <span id="roomStatus">متصل</span>
+                                <span id="userCount">• 0 مستخدم</span>
+                                <span id="messageCount">• 0 رسالة</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- مؤقت ثابت وقائمة الخيارات -->
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <!-- مؤقت العد التنازلي (ثابت) -->
+                        <div class="text-center bg-gray-100 dark:bg-gray-700 rounded-lg p-3">
+                            <div id="timeRemaining" class="text-xl font-bold text-primary">00:00</div>
+                            <div class="text-xs text-gray-500">الوقت المتبقي</div>
+                            <div id="totalTimeDisplay" class="text-xs text-gray-400"></div>
+                        </div>
+
+                        <!-- قائمة الخيارات -->
+                        <div class="relative">
+                            <button id="menuBtn" class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 p-3 rounded-lg transition-colors">
+                                ⚙️
+                            </button>
+                            <div id="menuDropdown" class="hidden absolute left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-10">
+                                <button id="shareRoomBtn" class="w-full text-right px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center space-x-2 space-x-reverse">
+                                    <span>📤</span>
+                                    <span>مشاركة معلومات الغرفة</span>
+                                </button>
+                                <button id="leaveRoomBtn" class="w-full text-right px-4 py-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center space-x-2 space-x-reverse">
+                                    <span>🚪</span>
+                                    <span>مغادرة الغرفة</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- منطقة المحادثة -->
+        <div class="flex-1 flex flex-col max-w-6xl mx-auto w-full">
+            <!-- الرسائل -->
+            <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+                <!-- رسالة الترحيب -->
+                <div class="text-center py-8">
+                    <div class="text-4xl mb-4">🎉</div>
+                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">مرحباً بك في الغرفة!</h3>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm mt-2">ابدأ المحادثة الآن...</p>
+                </div>
+            </div>
+
+            <!-- منطقة الكتابة -->
+            <div class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
+                <div class="flex items-end space-x-4 space-x-reverse">
+                    <!-- حقل الكتابة -->
+                    <div class="flex-1 relative">
+                        <textarea id="messageInput"
+                                  class="w-full p-4 pr-12 border border-gray-300 dark:border-gray-600 rounded-xl
+                                         resize-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20
+                                         dark:bg-gray-700 dark:text-white text-base max-h-32"
+                                  placeholder="اكتب رسالتك هنا... (اضغط Enter للإرسال، Shift+Enter لسطر جديد)"
+                                  rows="2"></textarea>
+
+                        <!-- عداد الأحرف -->
+                        <div id="charCount" class="absolute bottom-2 left-2 text-xs text-gray-400">0/1000</div>
+                    </div>
+
+                    <!-- أزرار الإرسال -->
+                    <div class="flex flex-col space-y-2">
+                        <button id="sendImageBtn"
+                                class="bg-secondary hover:bg-secondary/90 text-white p-3 rounded-xl transition-colors flex items-center justify-center group"
+                                title="إرسال صورة">
+                            <span class="text-xl group-hover:scale-110 transition-transform">📷</span>
+                        </button>
+                        <button id="sendMessageBtn"
+                                class="bg-primary hover:bg-primary/90 text-white p-3 rounded-xl transition-colors flex items-center justify-center group"
+                                title="إرسال رسالة">
+                            <span class="text-xl group-hover:scale-110 transition-transform">🚀</span>
+                        </button>
+                    </div>
+                </div>
+
+                <input type="file" id="imageMessageInput" accept="image/*" class="hidden">
+            </div>
+        </div>
+    </div>
+
+    <!-- شاشة انتهاء الصلاحية -->
+    <div id="expiredScreen" class="hidden min-h-screen bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
+            <div class="text-6xl mb-4">⏰</div>
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-white mb-4">انتهت صلاحية الغرفة</h1>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                انتهت صلاحية غرفة المحادثة. يمكنك إنشاء غرفة جديدة أو العودة للصفحة الرئيسية.
+            </p>
+            <div class="space-y-3">
+                <button id="newRoomBtn"
+                        class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-xl
+                               transition-all duration-300 transform hover:scale-105">
+                    🚀 إنشاء غرفة جديدة
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // إعداد الوضع المظلم
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // إعداد Socket.IO
+        const socket = io({
+            transports: ['websocket', 'polling'],
+            upgrade: true,
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionAttempts: 5
+        });
+
+        // الصور المتاحة - لن نعتمد على روابط خارجية
+        const availableImages = [
+            {
+                name: 'الجبال الثلجية',
+                id: 'mountain_snow',
+                emoji: '🏔️',
+                color: '#3B82F6'
+            },
+            {
+                name: 'الغابة الخضراء',
+                id: 'green_forest',
+                emoji: '🌲',
+                color: '#10B981'
+            },
+            {
+                name: 'أشجار النخيل',
+                id: 'palm_trees',
+                emoji: '🌴',
+                color: '#F59E0B'
+            },
+            {
+                name: 'التقنية الحديثة',
+                id: 'modern_tech',
+                emoji: '💻',
+                color: '#8B5CF6'
+            },
+            {
+                name: 'غابة الخيزران',
+                id: 'bamboo_forest',
+                emoji: '🎋',
+                color: '#84CC16'
+            },
+            {
+                name: 'قمة الجبل',
+                id: 'mountain_peak',
+                emoji: '⛰️',
+                color: '#EC4899'
+            },
+            {
+                name: 'العالم المائي',
+                id: 'underwater',
+                emoji: '🌊',
+                color: '#06B6D4'
+            },
+            {
+                name: 'مغامر التسلق',
+                id: 'mountain_hiker',
+                emoji: '🧗',
+                color: '#EF4444'
+            }
+        ];
+
+        // دالة إنشاء صورة SVG بشكل صحيح
+        function createSVGImage(image) {
+            const svgContent = `
+                <svg width="100%" height="100%" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="100%" height="100%" rx="15" fill="${image.color}" />
+                    <text x="50%" y="45%" font-size="50" text-anchor="middle" dy=".3em" fill="white">${image.emoji}</text>
+                    <text x="50%" y="75%" font-size="20" text-anchor="middle" dy=".3em" fill="white" font-family="Arial, sans-serif" font-weight="bold">${image.name}</text>
+                </svg>
+            `;
+            
+            // تشفير المحتوى بشكل صحيح
+            return 'data:image/svg+xml,' + encodeURIComponent(svgContent).replace(/%20/g, ' ');
+        }
+
+        // متغيرات التطبيق
+        let selectedImage = null;
+        let selectedDuration = 5;
+        let currentRoomKey = null;
+        let roomStartTime = null;
+        let roomDuration = 5 * 60 * 1000;
+        let countdownInterval = null;
+        let messages = [];
+        let currentUser = null;
+        let isConnected = false;
+        let userCount = 0;
+
+        // عناصر DOM - شاشة الدخول
+        const loginScreen = document.getElementById('loginScreen');
+        const imageGallery = document.getElementById('imageGallery');
+        const usernameInput = document.getElementById('usernameInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const customDuration = document.getElementById('customDuration');
+        const enterRoomBtn = document.getElementById('enterRoomBtn');
+        const enterBtnText = document.getElementById('enterBtnText');
+        const uploadImageBtn = document.getElementById('uploadImageBtn');
+        const customImageInput = document.getElementById('customImageInput');
+
+        // عناصر DOM - شاشة المحادثة
+        const chatScreen = document.getElementById('chatScreen');
+        const expiredScreen = document.getElementById('expiredScreen');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const statusText = document.getElementById('statusText');
+        const roomImagePreview = document.getElementById('roomImagePreview');
+        const roomStatus = document.getElementById('roomStatus');
+        const userCountEl = document.getElementById('userCount');
+        const messageCountEl = document.getElementById('messageCount');
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const charCount = document.getElementById('charCount');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        const sendImageBtn = document.getElementById('sendImageBtn');
+        const imageMessageInput = document.getElementById('imageMessageInput');
+        const timeRemaining = document.getElementById('timeRemaining');
+        const totalTimeDisplay = document.getElementById('totalTimeDisplay');
+        const menuBtn = document.getElementById('menuBtn');
+        const menuDropdown = document.getElementById('menuDropdown');
+        const shareRoomBtn = document.getElementById('shareRoomBtn');
+        const leaveRoomBtn = document.getElementById('leaveRoomBtn');
+        const newRoomBtn = document.getElementById('newRoomBtn');
+
+        // إدارة حالة الاتصال
+        function showConnectionStatus(message, type = 'error') {
+            statusText.textContent = message;
+
+            const statusDiv = connectionStatus.querySelector('div');
+            statusDiv.className = `px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2 space-x-reverse ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
+            } text-white`;
+
+            connectionStatus.classList.remove('hidden');
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    connectionStatus.classList.add('hidden');
+                }, 3000);
+            }
+        }
+
+        // Socket.IO أحداث الاتصال
+        socket.on('connect', () => {
+            isConnected = true;
+            console.log('✅ متصل بالخادم');
+            showConnectionStatus('متصل بالخادم', 'success');
+        });
+
+        socket.on('disconnect', () => {
+            isConnected = false;
+            console.log('❌ انقطع الاتصال بالخادم');
+            showConnectionStatus('انقطع الاتصال - محاولة إعادة الاتصال...');
+        });
+
+        socket.on('reconnect', (attemptNumber) => {
+            isConnected = true;
+            console.log(`🔄 تم إعادة الاتصال بعد ${attemptNumber} محاولة`);
+            showConnectionStatus('تم استعادة الاتصال', 'success');
+        });
+
+        socket.on('reconnect_attempt', (attemptNumber) => {
+            console.log(`🔄 محاولة إعادة الاتصال رقم ${attemptNumber}`);
+            showConnectionStatus(`محاولة الاتصال ${attemptNumber}...`);
+        });
+
+        // أحداث Socket.IO للغرفة
+        socket.on('room-joined', (data) => {
+            if (data.success) {
+                const room = data.room;
+                const user = data.user;
+
+                console.log('انضممت للغرفة بنجاح:', data);
+
+                // الانتقال لشاشة المحادثة
+                loginScreen.classList.add('hidden');
+                chatScreen.classList.remove('hidden');
+
+                // تحديث بيانات الغرفة
+                roomStartTime = room.startTime;
+                roomDuration = room.duration;
+                messages = room.messages;
+                currentUser = user;
+                userCount = room.userCount || room.users.length;
+
+                // تحديث واجهة الغرفة
+                if (room.image) {
+                    // إذا كانت الصورة خاصة متخصصة (Data URL)
+                    if (room.image.url.startsWith('data:image')) {
+                        roomImagePreview.innerHTML = `<img src="${room.image.url}" alt="${room.image.name}" class="w-full h-full object-cover">`;
+                    }
+                    // إذا كانت صورة نظامية (نستخدم SVG)
+                    else {
+                        const svgUrl = createSVGImage(room.image);
+                        roomImagePreview.innerHTML = `<img src="${svgUrl}" alt="${room.image.name}" class="w-full h-full object-cover">`;
+                    }
+                }
+
+                updateRoomStatus();
+                updateTotalTimeDisplay();
+
+                // بدء المؤقت
+                startCountdown();
+
+                // تحديث الرسائل
+                updateMessagesDisplay();
+
+                // تركيز على حقل الرسالة
+                messageInput.focus();
+
+                console.log('انضممت للغرفة كـ:', user.username);
+            }
+        });
+
+        socket.on('room-expired', () => {
+            showExpiredScreen();
+        });
+
+        socket.on('join-error', (data) => {
+            console.error('خطأ في الانضمام:', data);
+            showAlert(data.message || 'فشل الانضمام للغرفة');
+        });
+
+        socket.on('new-message', (message) => {
+            messages.push(message);
+            updateMessagesDisplay();
+            updateRoomStatus();
+        });
+
+        socket.on('user-joined', (data) => {
+            userCount = data.totalUsers;
+            updateRoomStatus();
+            console.log('مستخدم جديد انضم:', data.user.username);
+        });
+
+        socket.on('user-left', (data) => {
+            userCount = data.totalUsers;
+            updateRoomStatus();
+            console.log('مستخدم غادر:', data.user.username);
+        });
+
+        socket.on('left-room', () => {
+            // العودة لشاشة الدخول
+            chatScreen.classList.add('hidden');
+            loginScreen.classList.remove('hidden');
+
+            // إعادة تعيين المتغيرات
+            currentRoomKey = null;
+            currentUser = null;
+            messages = [];
+
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+        });
+
+        // تحميل الصور في المعرض - الإصلاح الرئيسي
+        function loadImageGallery() {
+            // التأكد من أن العنصر موجود
+            if (!imageGallery) {
+                console.error('عنصر imageGallery غير موجود');
+                return;
+            }
+
+            // تنظيف المعرض قبل البدء
+            imageGallery.innerHTML = '';
+            imageGallery.className = 'grid grid-cols-4 gap-3 mb-4 min-h-[200px]';
+            
+            // إنشاء الصور وعرضها
+            availableImages.forEach((image, index) => {
+                // توليد صورة SVG
+                const svgUrl = createSVGImage(image);
+                
+                // وإنشاء العنصر في DOM
+                const container = document.createElement('div');
+                container.className = 'gallery-item';
+                container.dataset.imageId = image.id;
+                
+                container.innerHTML = `
+                    <img src="${svgUrl}" 
+                         alt="${image.name}" 
+                         class="w-full h-full object-cover">
+                    <div class="gallery-item-overlay">
+                        <div class="gallery-item-overlay-text">
+                            ${image.emoji} ${image.name}
+                        </div>
+                    </div>
+                    <div class="gallery-item-number">${index + 1}</div>
+                `;
+                
+                container.addEventListener('click', function() {
+                    // إلغاء تحديد كل الصور
+                    document.querySelectorAll('.gallery-item').forEach(item => {
+                        item.classList.remove('selected');
+                    });
+                    
+                    // تحديد الصورة الجديدة
+                    this.classList.add('selected');
+                    
+                    // حفظ الصورة المختارة
+                    selectedImage = {
+                        ...image,
+                        url: svgUrl
+                    };
+                    
+                    console.log('تم اختيار الصورة:', selectedImage);
+                    
+                    updateEnterButton();
+                });
+                
+                imageGallery.appendChild(container);
+            });
+            
+            // إضافة خيار لرفع صورة مصممة
+            const uploadContainer = document.createElement('div');
+            uploadContainer.className = 'gallery-item image-upload-container';
+            uploadContainer.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full">
+                    <div class="text-2xl mb-1">+</div>
+                    <div class="text-sm font-medium text-center">رفع صورة مخصصة</div>
+                </div>
+            `;
+            
+            uploadContainer.addEventListener('click', () => {
+                customImageInput.click();
+            });
+            
+            imageGallery.appendChild(uploadContainer);
+            
+            console.log(`تم تحميل ${availableImages.length} صورة متوافقة في المعرض`);
+        }
+
+        // اختيار صورة
+        function selectImage(image, element) {
+            // إزالة التحديد السابق
+            document.querySelectorAll('.border-primary').forEach(el => {
+                el.classList.remove('border-primary');
+                el.classList.add('border-transparent');
+            });
+            
+            // تحديد الصورة الجديدة
+            element.classList.add('border-primary');
+            element.classList.remove('border-transparent');
+            
+            selectedImage = image;
+            updateEnterButton();
+        }
+
+        // إدارة اختيار المدة
+        function setupDurationSelection() {
+            const durationButtons = document.querySelectorAll('.duration-btn');
+
+            durationButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // إزالة التحديد من جميع الأزرار
+                    durationButtons.forEach(b => {
+                        b.classList.remove('bg-primary', 'text-white');
+                        b.classList.add('bg-gray-200', 'dark:bg-gray-600', 'text-gray-700', 'dark:text-gray-300');
+                    });
+
+                    // تحديد الزر المضغوط
+                    btn.classList.add('bg-primary', 'text-white');
+                    btn.classList.remove('bg-gray-200', 'dark:bg-gray-600', 'text-gray-700', 'dark:text-gray-300');
+
+                    selectedDuration = parseInt(btn.dataset.duration);
+                    if (customDuration) customDuration.value = '';
+                });
+            });
+
+            // مدة مخصصة
+            if (customDuration) {
+                customDuration.addEventListener('input', () => {
+                    if (customDuration.value) {
+                        selectedDuration = parseInt(customDuration.value) || 5;
+
+                        // إزالة التحديد من الأزرار المحددة مسبقاً
+                        durationButtons.forEach(b => {
+                            b.classList.remove('bg-primary', 'text-white');
+                            b.classList.add('bg-gray-200', 'dark:bg-gray-600', 'text-gray-700', 'dark:text-gray-300');
+                        });
+                    }
+                });
+            }
+        }
+
+        // تحديث زر الدخول
+        function updateEnterButton() {
+            const hasImage = selectedImage !== null;
+            const hasPassword = passwordInput.value.trim().length > 0;
+            enterRoomBtn.disabled = !(hasImage && hasPassword);
+
+            if (hasImage && hasPassword) {
+                enterRoomBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                enterBtnText.textContent = '💬 دخول الغرفة';
+            } else {
+                enterRoomBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                enterBtnText.textContent = '⚠️ يرجى اختيار صورة وكلمة مرور';
+            }
+        }
+
+        // إنشاء مفتاح الغرفة
+        function generateRoomKey(image, password, username) {
+            const combined = `${image.id}_${password}`;
+            let hash = 0;
+            for (let i = 0; i < combined.length; i++) {
+                const char = combined.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(36);
+        }
+
+        // دخول الغرفة
+        function enterRoom() {
+            if (!selectedImage || !passwordInput.value.trim()) {
+                showAlert('يرجى اختيار صورة وإدخال كلمة مرور');
+                return;
+            }
+
+            if (!isConnected) {
+                showAlert('غير متصل بالخادم، يرجى المحاولة لاحقاً');
+                return;
+            }
+
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            currentRoomKey = generateRoomKey(selectedImage, password, username);
+
+            console.log('محاولة دخول الغرفة:', {
+                roomKey: currentRoomKey,
+                image: selectedImage.name,
+                username: username || 'تلقائي',
+                duration: selectedDuration
+            });
+
+            // إرسال طلب انضمام للخادم
+            socket.emit('join-room', {
+                roomKey: currentRoomKey,
+                image: selectedImage,
+                selectedDuration: selectedDuration,
+                username: username || null
+            });
+        }
+
+        // رفع صورة مخصصة
+        function handleCustomImage(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                showAlert('يرجى اختيار ملف صورة صحيح');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const customImage = {
+                    url: e.target.result,
+                    name: file.name,
+                    id: 'custom_' + Date.now(),
+                    emoji: '🖼️'
+                };
+
+                // إضافة الصورة إلى المعرض في البداية
+                const container = document.createElement('div');
+                container.className = 'gallery-item selected';
+                container.dataset.imageId = customImage.id;
+                
+                container.innerHTML = `
+                    <img src="${customImage.url}" alt="${customImage.name}" class="w-full h-full object-cover">
+                    <div class="gallery-item-overlay">
+                        <div class="gallery-item-overlay-text">
+                            ${customImage.emoji} ${customImage.name}
+                        </div>
+                    </div>
+                    <div class="gallery-item-number custom">مخصصة</div>
+                `;
+                
+                // إلغاء تحديد كل الصور
+                document.querySelectorAll('.gallery-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                
+                // إضافة الصورة الجديدة في البداية
+                imageGallery.insertBefore(container, imageGallery.firstChild);
+                
+                // الاحتفاظ بإشارة إلى الصورة المختارة
+                selectedImage = customImage;
+                
+                container.addEventListener('click', function() {
+                    document.querySelectorAll('.gallery-item').forEach(item => {
+                        item.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    selectedImage = customImage;
+                    updateEnterButton();
+                });
+                
+                // اختيار الصورة الجديدة تلقائياً
+                container.click();
+                
+                console.log('تم رفع صورة مخصصة بنجاح');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // تحميل الصور باستخدام كائن IMG مضمون
+        function loadImagesSafely() {
+            const imagesToLoad = imageGallery.querySelectorAll('img');
+            imagesToLoad.forEach(img => {
+                const originalSrc = img.src;
+                
+                // إعادة المحاولة تلقائياً إذا فشل التحميل
+                img.onerror = function() {
+                    console.error('فشل تحميل الصورة:', originalSrc);
+                    this.src = createSVGImage({
+                        name: 'خطأ في التحميل',
+                        emoji: '⚠️',
+                        color: '#EF4444'
+                    });
+                };
+            });
+        }
+
+        // بقية الدوال تبقى كما هي...
+
+        // تحديث حالة الغرفة
+        function updateRoomStatus() {
+            if (currentUser) {
+                roomStatus.textContent = `${currentUser.username}`;
+            }
+            userCountEl.textContent = `• ${userCount} مستخدم`;
+            messageCountEl.textContent = `• ${messages.length} رسالة`;
+        }
+
+        // بدء العد التنازلي
+        function startCountdown() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+
+            countdownInterval = setInterval(() => {
+                const now = Date.now();
+                const elapsed = now - roomStartTime;
+                const remaining = roomDuration - elapsed;
+
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval);
+                    showExpiredScreen();
+                    return;
+                }
+
+                const minutes = Math.floor(remaining / 60000);
+                const seconds = Math.floor((remaining % 60000) / 1000);
+                timeRemaining.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                // تغيير لون المؤقت حسب الوقت المتبقي
+                if (remaining < 60000) { // أقل من دقيقة
+                    timeRemaining.className = 'text-xl font-bold text-red-500 countdown-warning';
+                } else if (remaining < 300000) { // أقل من 5 دقائق
+                    timeRemaining.className = 'text-xl font-bold text-yellow-500';
+                } else {
+                    timeRemaining.className = 'text-xl font-bold text-primary';
+                }
+            }, 1000);
+        }
+
+        // تحديث عرض الوقت الكامل
+        function updateTotalTimeDisplay() {
+            if (totalTimeDisplay) {
+                const totalMinutes = Math.floor(roomDuration / 60000);
+                totalTimeDisplay.textContent = `المدة: ${totalMinutes} دقيقة (ثابتة)`;
+            }
+        }
+
+        // عرض شاشة انتهاء الصلاحية
+        function showExpiredScreen() {
+            chatScreen.classList.add('hidden');
+            expiredScreen.classList.remove('hidden');
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+        }
+
+        // إرسال رسالة
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text || text.length > 1000) return;
+
+            socket.emit('send-message', { text: text });
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            updateCharCount();
+        }
+
+        // إرسال صورة
+        function handleImageSend(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                showAlert('يرجى اختيار ملف صورة صحيح');
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                showAlert('حجم الصورة كبير جداً (الحد الأقصى 5 ميجابايت)');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                socket.emit('send-image', { imageUrl: e.target.result });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // تحديث عداد الأحرف
+        function updateCharCount() {
+            const count = messageInput.value.length;
+            charCount.textContent = `${count}/1000`;
+            charCount.className = count > 900 ? 'absolute bottom-2 left-2 text-xs text-red-400' :
+                                   count > 800 ? 'absolute bottom-2 left-2 text-xs text-yellow-400' :
+                                   'absolute bottom-2 left-2 text-xs text-gray-400';
+        }
+
+        // تحديث عرض الرسائل
+        function updateMessagesDisplay() {
+            // إزالة رسالة الترحيب إذا كانت موجودة
+            const welcomeMsg = messagesContainer.querySelector('.text-center');
+            if (welcomeMsg && messages.length > 0) {
+                welcomeMsg.remove();
+            }
+
+            messages.forEach(message => {
+                // تحقق من عدم وجود الرسالة مسبقاً
+                if (document.getElementById(`message-${message.id}`)) return;
+
+                const messageDiv = document.createElement('div');
+                messageDiv.id = `message-${message.id}`;
+
+                if (message.sender === 'system') {
+                    messageDiv.className = `message-animation flex justify-center mb-4`;
+                    messageDiv.innerHTML = `
+                        <div class="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200
+                                    px-4 py-2 rounded-xl text-sm font-medium max-w-md text-center shadow-sm">
+                            ${escapeHtml(message.text)}
+                        </div>
+                    `;
+                } else {
+                    const isMyMessage = message.userId === socket.id;
+                    messageDiv.className = `message-animation flex ${isMyMessage ? 'justify-end' : 'justify-start'} mb-4`;
+
+                    const messageContent = document.createElement('div');
+                    messageContent.className = `max-w-sm lg:max-w-md px-4 py-3 rounded-2xl shadow-sm ${
+                        isMyMessage
+                            ? 'bg-primary text-white rounded-br-md'
+                            : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-bl-md border border-gray-200 dark:border-gray-600'
+                    }`;
+
+                    if (message.type === 'text') {
+                        messageContent.innerHTML = `
+                            <div class="text-xs opacity-70 mb-1 font-semibold">
+                                ${message.username || 'مستخدم غير معروف'}
+                            </div>
+                            <p class="break-words leading-relaxed">${escapeHtml(message.text)}</p>
+                            <div class="text-xs opacity-70 mt-2 text-left">
+                                ${new Date(message.timestamp).toLocaleTimeString('ar-SA', {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })}
+                            </div>
+                        `;
+                    } else if (message.type === 'image') {
+                        messageContent.innerHTML = `
+                            <div class="text-xs opacity-70 mb-2 font-semibold">
+                                ${message.username || 'مستخدم غير معروف'}
+                            </div>
+                            <img src="${message.imageUrl}" alt="صورة" class="max-w-full rounded-lg mb-2 cursor-pointer hover:scale-105 transition-transform"
+                                 onclick="showImageModal('${message.imageUrl}')">
+                            <div class="text-xs opacity-70 text-left">
+                                ${new Date(message.timestamp).toLocaleTimeString('ar-SA', {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })}
+                            </div>
+                        `;
+                    }
+
+                    messageDiv.appendChild(messageContent);
+                }
+
+                messagesContainer.appendChild(messageDiv);
+            });
+
+            // التمرير لأسفل
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // عرض الصورة في نافذة منبثقة
+        function showImageModal(imageUrl) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="relative max-w-4xl max-h-full">
+                    <img src="${imageUrl}" alt="صورة مكبرة" class="max-w-full max-h-full object-contain rounded-lg border-4 border-white">
+                    <button onclick="this.closest('.fixed').remove()"
+                            class="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-12 h-12
+                                   flex items-center justify-center hover:bg-opacity-75 transition-colors text-xl">
+                        ✕
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        // مساعدة للتنبيهات
+        function showAlert(message) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full p-6">
+                    <div class="text-center">
+                        <div class="text-4xl mb-4">⚠️</div>
+                        <p class="text-gray-700 dark:text-gray-300 mb-4">${message}</p>
+                        <button onclick="this.closest('.fixed').remove()"
+                                class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg transition-colors">
+                            حسناً
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // دالة مساعدة لتجنب XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // مستمعي الأحداث
+        document.addEventListener('DOMContentLoaded', () => {
+            // تحميل الصور أولاً
+            loadImageGallery();
+            
+            // التأكد من أن الصور قد تم تحميلها
+            setTimeout(loadImagesSafely, 500);
+            
+            // إعداد بقية المكونات
+            setupDurationSelection();
+            updateEnterButton();
+            updateCharCount();
+
+            // مراقبة تغييرات كلمة المرور
+            passwordInput.addEventListener('input', updateEnterButton);
+            
+            // معالجة رفع الصور المخصصة
+            customImageInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleCustomImage(e.target.files[0]);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
