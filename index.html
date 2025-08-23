@@ -549,6 +549,32 @@ input={"old_str": "        // الصور المتاحة - سيتم إنشاؤه�
             }
         }
 
+        // تحميل الصور في المعرض
+        function loadImageGallery() {
+            imageGallery.innerHTML = '';
+            availableImages.forEach((image, index) => {
+                const imageDiv = document.createElement('div');
+                imageDiv.className = `image-hover cursor-pointer rounded-lg overflow-hidden border-2 border-transparent 
+                                     hover:border-primary transition-all aspect-square relative`;
+                imageDiv.innerHTML = `
+                    <img src="${image.url}" alt="${image.name}" 
+                         class="w-full h-full object-cover" 
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjY2NjIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7YtdmI2LHYqDwvdGV4dD48L3N2Zz4='">
+                    <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all 
+                                flex items-center justify-center">
+                        <span class="text-white text-xs font-bold opacity-0 hover:opacity-100 transition-opacity">
+                            ${image.name}
+                        </span>
+                    </div>
+                    <div class="absolute bottom-1 left-1 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+                        ${index + 1}
+                    </div>
+                `;
+                imageDiv.addEventListener('click', () => selectImage(image, imageDiv));
+                imageGallery.appendChild(imageDiv);
+            });
+            console.log('تم تحميل', availableImages.length, 'صورة في المعرض');
+        }
         // Socket.IO أحداث الاتصال
         socket.on('connect', () => {
             isConnected = true;
