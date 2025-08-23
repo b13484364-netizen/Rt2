@@ -52,7 +52,7 @@
                     </div>
                     <div class="flex items-center">
                         <span class="w-2 h-2 bg-purple-500 rounded-full ml-2"></span>
-                        وقت مرن
+                        وقت محدد
                     </div>
                 </div>
             </div>
@@ -94,7 +94,7 @@
                     <!-- مدة الغرفة -->
                     <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl">
                         <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white flex items-center">
-                            ⏰ مدة الغرفة
+                            ⏰ مدة الغرفة (ثابتة)
                         </h3>
                         <div class="grid grid-cols-2 gap-3 mb-4">
                             <button type="button" class="duration-btn bg-primary text-white py-3 px-4 rounded-lg transition-all text-sm font-medium hover:bg-primary/90"
@@ -116,6 +116,11 @@
                                           focus:outline-none focus:border-primary dark:bg-gray-600 dark:text-white text-base w-20"
                                    placeholder="60">
                             <span class="text-gray-500 text-sm">دقيقة</span>
+                        </div>
+                        <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <p class="text-sm text-blue-700 dark:text-blue-300">
+                                💡 <strong>ملاحظة:</strong> مدة الغرفة ثابتة ولا يمكن تعديلها من داخل الغرفة
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -153,9 +158,14 @@
                         <div id="roomKeyDisplay" class="hidden mt-4 p-4 bg-green-100 dark:bg-green-900 rounded-lg">
                             <p class="text-sm text-green-800 dark:text-green-200 font-medium">مفتاح الغرفة:</p>
                             <p id="roomKeyText" class="text-lg font-mono text-green-900 dark:text-green-100 break-all"></p>
-                            <button id="copyKeyBtn" class="mt-2 text-sm bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded transition-colors">
-                                📋 نسخ المفتاح
-                            </button>
+                            <div class="mt-3 flex space-x-2 space-x-reverse">
+                                <button id="copyKeyBtn" class="text-sm bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded transition-colors">
+                                    📋 نسخ المفتاح
+                                </button>
+                                <button id="enterRoomBtn" class="text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition-colors">
+                                    💬 دخول الغرفة
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -178,7 +188,7 @@
                         </li>
                         <li class="flex items-start">
                             <span class="text-blue-500 ml-2">3️⃣</span>
-                            حدد مدة الغرفة المناسبة
+                            حدد مدة الغرفة (ثابتة)
                         </li>
                     </ul>
                     <ul class="space-y-2">
@@ -287,6 +297,7 @@
         const roomKeyDisplay = document.getElementById('roomKeyDisplay');
         const roomKeyText = document.getElementById('roomKeyText');
         const copyKeyBtn = document.getElementById('copyKeyBtn');
+        const enterRoomBtn = document.getElementById('enterRoomBtn');
 
         // تحميل الصور في المعرض
         function loadImageGallery() {
@@ -409,43 +420,58 @@
             const password = passwordInput.value.trim();
             const roomKey = generateRoomKey(selectedImage, password, username);
 
-            // حفظ بيانات الغرفة
+            // حفظ بيانات الغرفة في localStorage
             const roomData = {
                 roomKey: roomKey,
                 image: selectedImage,
                 duration: selectedDuration,
                 password: password,
-                username: username,
+                username: username || null, // null للحصول على اسم تلقائي
                 createdAt: Date.now()
             };
 
-            localStorage.setItem('roomData', JSON.stringify(roomData));
+            // حفظ البيانات
+            localStorage.setItem(`roomData_${roomKey}`, JSON.stringify(roomData));
+            localStorage.setItem('currentRoomKey', roomKey);
+
+            console.log('تم إنشاء الغرفة:', roomData);
 
             // عرض مفتاح الغرفة
             roomKeyText.textContent = roomKey;
             roomKeyDisplay.classList.remove('hidden');
 
-            // تحديث زر الإنشاء
-            createBtnText.innerHTML = '💬 دخول الغرفة';
-            createRoomBtn.onclick = () => {
+            // إخفاء زر الإنشاء وإظهار أزرار النسخ والدخول
+            createRoomBtn.style.display = 'none';
+        }
+
+        // دخول الغرفة
+        function enterRoom() {
+            const roomKey = roomKeyText.textContent;
+            if (roomKey) {
+                console.log('الانتقال إلى الغرفة:', roomKey);
                 window.location.href = `chat.html?room=${roomKey}`;
-            };
+            }
         }
 
         // نسخ مفتاح الغرفة
         function copyRoomKey() {
-            navigator.clipboard.writeText(roomKeyText.textContent).then(() => {
-                const originalText = copyKeyBtn.textContent;
-                copyKeyBtn.textContent = '✅ تم النسخ!';
-                copyKeyBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
-                copyKeyBtn.classList.add('bg-green-700');
-                
-                setTimeout(() => {
-                    copyKeyBtn.textContent = originalText;
-                    copyKeyBtn.classList.add('bg-green-500', 'hover:bg-green-600');
-                    copyKeyBtn.classList.remove('bg-green-700');
-                }, 2000);
-            });
+            const roomKey = roomKeyText.textContent;
+            const shareText = `🔐 انضم لغرفة المحادثة الآمنة!\n\nمفتاح الغرفة: ${roomKey}\nالرابط: ${window.location.origin}/chat.html?room=${roomKey}`;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    const originalText = copyKeyBtn.textContent;
+                    copyKeyBtn.textContent = '✅ تم النسخ!';
+                    copyKeyBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                    copyKeyBtn.classList.add('bg-green-700');
+                    
+                    setTimeout(() => {
+                        copyKeyBtn.textContent = originalText;
+                        copyKeyBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                        copyKeyBtn.classList.remove('bg-green-700');
+                    }, 2000);
+                });
+            }
         }
 
         // رفع صورة مخصصة
@@ -513,6 +539,7 @@
         usernameInput.addEventListener('input', updateCreateButton);
         createRoomBtn.addEventListener('click', createRoom);
         copyKeyBtn.addEventListener('click', copyRoomKey);
+        enterRoomBtn.addEventListener('click', enterRoom);
         uploadImageBtn.addEventListener('click', () => customImageInput.click());
         customImageInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
