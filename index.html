@@ -376,69 +376,57 @@
             reconnectionAttempts: 5
         });
 
-        // الصور المتاحة - سيتم إنشاؤها برمجياً
+        // الصور المتاحة - SVG مدمجة
         const availableImages = [
             {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjM0I4MkY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2KfZhNis2KjYp9mEINin2YTYq9mE2KzZiTwvdGV4dD48L3N2Zz4=',
                 name: 'الجبال الثلجية',
                 id: 'mountain_snow',
-                emoji: '🏔️',
-                color: '#3B82F6'
+                emoji: '🏔️'
             },
             {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTBCOTgxIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2KfZhNi62KfYqNipINin2YTYrtiu2LHYp9ihPC90ZXh0Pjwvc3ZnPg==',
                 name: 'الغابة الخضراء',
                 id: 'green_forest',
-                emoji: '🌲',
-                color: '#10B981'
+                emoji: '🌲'
             },
             {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRjU5RTBCIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2KPYtNis2KfYsSDYp9mE2YbYrtmK2YQ8L3RleHQ+PC9zdmc+',
                 name: 'أشجار النخيل',
                 id: 'palm_trees',
-                emoji: '🌴',
-                color: '#F59E0B'
+                emoji: '🌴'
             },
             {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOEI1Q0Y2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2KfZhNiq2YLZhtmK2Kkg2KfZhNit2K/Zitir2Kk8L3RleHQ+PC9zdmc+',
                 name: 'التقنية الحديثة',
                 id: 'modern_tech',
-                emoji: '💻',
-                color: '#8B5CF6'
+                emoji: '💻'
             },
             {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjODRDQzE2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2LrYp9io2Kkg2KfZhNiu2YrYstix2KfZhDwvdGV4dD48L3N2Zz4=',
                 name: 'غابة الخيزران',
                 id: 'bamboo_forest',
-                emoji: '🎋',
-                color: '#84CC16'
+                emoji: '🎋'
             },
             {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRUM0ODk5Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2YLZhdipINin2YTYrNio2YQ8L3RleHQ+PC9zdmc+',
                 name: 'قمة الجبل',
                 id: 'mountain_peak',
-                emoji: '⛰️',
-                color: '#EC4899'
+                emoji: '⛰️'
             },
             {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMDZCNkQ0Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2KfZhNi52KfZhNmFINin2YTZhdmI2KfYpNmKPC90ZXh0Pjwvc3ZnPg==',
                 name: 'العالم المائي',
                 id: 'underwater',
-                emoji: '🌊',
-                color: '#06B6D4'
+                emoji: '🌊'
             },
             {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjRUY0NDQ0Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+2YXYutim2YXYsSDYp9mE2KrYs9mE2YI8L3RleHQ+PC9zdmc+',
                 name: 'مغامر التسلق',
                 id: 'mountain_hiker',
-                emoji: '🧗',
-                color: '#EF4444'
+                emoji: '🧗'
             }
         ];
-
-        // دالة إنشاء صورة SVG
-        function createSVGImage(image) {
-            const svg = `
-                <svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="100%" height="100%" fill="${image.color}"/>
-                    <text x="50%" y="45%" font-size="40" text-anchor="middle" dy=".3em" fill="white">${image.emoji}</text>
-                    <text x="50%" y="65%" font-size="14" text-anchor="middle" dy=".3em" fill="white" font-family="Arial">${image.name}</text>
-                </svg>
-            `;
-            return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-        }
 
         // متغيرات التطبيق
         let selectedImage = null;
@@ -616,9 +604,6 @@
             imageGallery.innerHTML = '';
 
             availableImages.forEach((image, index) => {
-                // إنشاء URL للصورة
-                image.url = createSVGImage(image);
-                
                 const imageDiv = document.createElement('div');
                 imageDiv.className = `image-hover cursor-pointer rounded-lg overflow-hidden border-3 border-transparent 
                                      hover:border-primary transition-all aspect-square relative bg-gray-100 dark:bg-gray-600`;
@@ -641,8 +626,6 @@
                 imageDiv.addEventListener('click', () => selectImage(image, imageDiv));
                 imageGallery.appendChild(imageDiv);
             });
-            
-            console.log('تم تحميل', availableImages.length, 'صورة في المعرض');
         }
 
         // اختيار صورة
